@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Outer glow / background shape -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="28dp" />
+            <solid android:color="#0C101A" />
+            <stroke
+                android:width="1.2dp"
+                android:color="#1A2234" />
+        </shape>
+    </item>
+    <!-- Top cyan accent glow border -->
+    <item android:bottom="46dp" android:left="32dp" android:right="32dp">
+        <shape android:shape="rectangle">
+            <corners android:topLeftRadius="28dp" android:topRightRadius="28dp" />
+            <gradient
+                android:startColor="#00000000"
+                android:centerColor="#8000F2FE"
+                android:endColor="#00000000"
+                android:angle="0" />
+            <size android:height="2dp" />
+        </shape>
+    </item>
+</layer-list>

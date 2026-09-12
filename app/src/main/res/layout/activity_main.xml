@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_space"
+    android:fitsSystemWindows="true">
+
+    <!-- MAIN SCREEN CONTENT -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/mainContentLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bg_space">
+
+        <!-- TOP CAPSULE BAR -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/topBarCapsule"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_top_capsule"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="14dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Left: Real Battery % and RAM % -->
+            <LinearLayout
+                android:id="@+id/boxTelemetry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/tvBatteryPct"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium"
+                    tools:text="37%" />
+
+                <TextView
+                    android:id="@+id/tvRamPct"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_muted"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif"
+                    tools:text="RAM 73%" />
+            </LinearLayout>
+
+            <!-- Center: JARVIS + AI COMPANION subtitle (Clickable to open History) -->
+            <LinearLayout
+                android:id="@+id/boxJarvisHeaderTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/tvJarvisTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="JARVIS"
+                    android:textColor="@color/text_primary"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-black"
+                    android:letterSpacing="0.25" />
+
+                <TextView
+                    android:id="@+id/tvJarvisSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI COMPANION"
+                    android:textColor="@color/text_muted"
+                    android:textSize="10sp"
+                    android:letterSpacing="0.15"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+
+            <!-- Right: Clock & Settings Icon -->
+            <LinearLayout
+                android:id="@+id/boxHeaderRight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/tvLiveTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.05"
+                    tools:text="14:50" />
+
+                <ImageButton
+                    android:id="@+id/btnSettings"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="10dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_settings"
+                    android:contentDescription="@string/settings_title"
+                    app:tint="@color/text_primary" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- SCREEN VISION ACTIVE BANNER -->
+        <LinearLayout
+            android:id="@+id/boxScreenVisionBanner"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_screen_vision_banner"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintTop_toBottomOf="@+id/topBarCapsule"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <View
+                android:id="@+id/dotScreenVision"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@drawable/bg_power_button"
+                android:backgroundTint="@color/status_red" />
+
+            <TextView
+                android:id="@+id/tvScreenVisionStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="VISION ACTIVE • SCREEN"
+                android:textColor="@color/primary_cyan"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginStart="10dp" />
+
+            <Button
+                android:id="@+id/btnStopScreenVision"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:background="@drawable/bg_btn_gradient"
+                android:text="STOP"
+                android:textColor="#050507"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="14dp"
+                app:backgroundTint="@null" />
+        </LinearLayout>
+
+        <!-- CENTER HOLOGRAPHIC ORB CONTAINER (WebView) -->
+        <FrameLayout
+            android:id="@+id/orbContainer"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="20dp"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintTop_toBottomOf="@+id/topBarCapsule"
+            app:layout_constraintBottom_toTopOf="@+id/bottomBarCapsule"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <WebView
+                android:id="@+id/webViewOrb"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent" />
+        </FrameLayout>
+
+        <!-- DRAGGABLE FLOATING CAMERA PREVIEW CARD -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardFloatingCamera"
+            android:layout_width="190dp"
+            android:layout_height="250dp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="14dp"
+            app:cardBackgroundColor="@color/bg_card"
+            app:layout_constraintTop_toTopOf="@+id/orbContainer"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="24dp">
+
+            <FrameLayout
+                android:id="@+id/floatingCameraFrame"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_floating_camera">
+
+                <!-- Live CameraX Preview -->
+                <androidx.camera.view.PreviewView
+                    android:id="@+id/cameraPreviewView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <!-- Drag Handle & Controls Overlay -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="8dp"
+                    android:background="#99050507">
+
+                    <!-- Indicator Badge -->
+                    <TextView
+                        android:id="@+id/lblCameraActive"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="CAMERA ACTIVE"
+                        android:textColor="@color/primary_cyan"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06"
+                        android:layout_marginStart="4dp" />
+
+                    <!-- Torch Button -->
+                    <ImageButton
+                        android:id="@+id/btnCameraTorch"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_flash_off"
+                        android:contentDescription="Torch"
+                        app:tint="@color/text_primary" />
+
+                    <!-- Lens Flip Button -->
+                    <ImageButton
+                        android:id="@+id/btnCameraFlip"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginStart="2dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_camera_flip"
+                        android:contentDescription="Flip Camera"
+                        app:tint="@color/text_primary" />
+
+                    <!-- Close Button -->
+                    <ImageButton
+                        android:id="@+id/btnCameraClose"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginStart="2dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_close"
+                        android:contentDescription="Close Camera"
+                        app:tint="@color/status_red" />
+                </LinearLayout>
+
+                <!-- Reticle / Frame Marker -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_vision_dock"
+                    android:alpha="0.3"
+                    android:clickable="false"
+                    android:focusable="false" />
+
+            </FrameLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- FLOATING VISION / CAMERA DOCK POPUP (Screenshot 4) -->
+        <LinearLayout
+            android:id="@+id/boxVisionDockPopup"
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:layout_marginBottom="12dp"
+            android:layout_marginEnd="32dp"
+            android:background="@drawable/bg_vision_dock"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@+id/bottomBarCapsule"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Camera Option -->
+            <LinearLayout
+                android:id="@+id/btnActionCamera"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:id="@+id/ivActionCameraIcon"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_camera"
+                    app:tint="@color/primary_cyan" />
+
+                <TextView
+                    android:id="@+id/tvActionCameraLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Camera"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="22dp"
+                android:background="@color/border_subtle"
+                android:layout_marginHorizontal="6dp" />
+
+            <!-- Vision Option -->
+            <LinearLayout
+                android:id="@+id/btnActionVision"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:id="@+id/ivActionVisionIcon"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_vision"
+                    app:tint="@color/neon_blue" />
+
+                <TextView
+                    android:id="@+id/tvActionVisionLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Vision"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- BOTTOM CONTROL CAPSULE (Screenshot 1 & 4) -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottomBarCapsule"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginHorizontal="32dp"
+            android:layout_marginBottom="36dp"
+            android:background="@drawable/bg_bottom_capsule"
+            android:paddingHorizontal="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Status Dot + Text (e.g. Speak, Muted, Listening, Offline, Vision) -->
+            <LinearLayout
+                android:id="@+id/boxStatusIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <View
+                    android:id="@+id/viewStatusDot"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/bg_power_button"
+                    android:backgroundTint="@color/soft_blue" />
+
+                <TextView
+                    android:id="@+id/tvConversationState"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Speak"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.05"
+                    android:layout_marginStart="10dp"
+                    tools:text="Speak" />
+            </LinearLayout>
+
+            <!-- Right Controls: Mic, Power, Expand Arrow -->
+            <LinearLayout
+                android:id="@+id/boxControlsRight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <!-- Mic Toggle Button -->
+                <ImageButton
+                    android:id="@+id/btnMicMute"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_mic"
+                    android:contentDescription="Mute / Unmute Mic"
+                    app:tint="@color/text_secondary" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="24dp"
+                    android:background="@color/border_subtle"
+                    android:layout_marginHorizontal="8dp" />
+
+                <!-- Power Circle Button -->
+                <FrameLayout
+                    android:id="@+id/btnPowerSession"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_control_button"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:id="@+id/ivPowerIcon"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_power"
+                        app:tint="@color/soft_blue" />
+                </FrameLayout>
+
+                <!-- Expand Chevron (Toggles Camera/Vision Dock Popup) -->
+                <ImageButton
+                    android:id="@+id/btnExpandChevron"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="8dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_chevron_up"
+                    android:contentDescription="Vision &amp; Camera Action Dock"
+                    app:tint="@color/soft_blue" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- LEFT-SWIPE HISTORY DRAWER (Screenshot 2) -->
+    <LinearLayout
+        android:id="@+id/navHistoryDrawer"
+        android:layout_width="320dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#050507"
+        android:orientation="vertical"
+        android:paddingTop="28dp"
+        android:paddingBottom="16dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <!-- Drawer Header -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/drawerHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="20dp"
+            android:paddingBottom="12dp">
+
+            <!-- Title & Subtitle -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/tvDrawerTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="JARVIS CHAT\nBOT"
+                    android:textColor="@color/neon_blue"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-black"
+                    android:letterSpacing="0.1" />
+
+                <TextView
+                    android:id="@+id/tvDrawerSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="HINGLISH HISTORY"
+                    android:textColor="@color/text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <!-- Actions: Group, Trash, Close X -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <ImageButton
+                    android:id="@+id/btnDrawerGroup"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_group"
+                    android:contentDescription="Group"
+                    app:tint="@color/text_secondary" />
+
+                <ImageButton
+                    android:id="@+id/btnDrawerDelete"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_delete"
+                    android:contentDescription="Clear History"
+                    app:tint="@color/status_red" />
+
+                <ImageButton
+                    android:id="@+id/btnDrawerClose"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_close"
+                    android:contentDescription="Close"
+                    app:tint="@color/text_secondary" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#151A29"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Chat History List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvDrawerChatHistory"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="8dp"
+            android:clipToPadding="false"
+            tools:listitem="@layout/item_chat_turn" />
+
+        <!-- Bottom Input Bar: "Type in Hinglish..." + Send -->
+        <LinearLayout
+            android:id="@+id/boxDrawerInputBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_chat_input"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp">
+
+                <EditText
+                    android:id="@+id/etDrawerMessage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:hint="Type in Hinglish..."
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_muted"
+                    android:textSize="13sp"
+                    android:singleLine="true"
+                    android:imeOptions="actionSend" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnDrawerSend"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_send_btn"
+                android:src="@drawable/ic_send"
+                android:contentDescription="Send"
+                app:tint="#050507" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.drawerlayout.widget.DrawerLayout>

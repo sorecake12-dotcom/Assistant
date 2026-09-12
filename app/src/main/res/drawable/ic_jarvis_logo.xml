@@ -1,0 +1,31 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+  <path
+      android:fillColor="#050507"
+      android:pathData="M0,0h108v108h-108z"/>
+  <!-- Outer glowing rings -->
+  <path
+      android:strokeColor="#1D263B"
+      android:strokeWidth="1.5"
+      android:pathData="M54,14 A40,40 0 1,1 53.9,14"/>
+  <path
+      android:strokeColor="#00F2FE"
+      android:strokeWidth="2"
+      android:strokeAlpha="0.6"
+      android:pathData="M54,22 A32,32 0 1,1 53.9,22"/>
+  <!-- Tech Accents -->
+  <path
+      android:strokeColor="#00D2FF"
+      android:strokeWidth="3"
+      android:pathData="M54,20 L54,26 M54,82 L54,88 M20,54 L26,54 M82,54 L88,54"/>
+  <!-- Inner Sci-Fi Arc Reactor Core -->
+  <path
+      android:fillColor="#00F2FE"
+      android:pathData="M54,34 A20,20 0 1,1 53.9,34"/>
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M54,44 A10,10 0 1,1 53.9,44"/>
+</vector>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>JARVIS Holographic Gyroscope Orb</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+<canvas id="gyroCanvas"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('gyroCanvas');
+  const ctx = canvas.getContext('2d');
+  let width = 360;
+  let height = 360;
+  const dpr = window.devicePixelRatio || 1;
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    width = rect.width || window.innerWidth || 360;
+    height = rect.height || window.innerHeight || 360;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+  }
+  window.addEventListener('resize', resize);
+  setTimeout(resize, 40);
+
+  let activeTheme = 'ARC_BLUE'; // or 'AMBER_GOLD'
+
+  // Presets for Arc Blue
+  const BLUE_PRESETS = {
+    idle: { speed: 0.008, coreGlow: 0.6, ringAlpha: 0.55, color: [0, 242, 254], coreColor: [100, 255, 218] },
+    background_listening: { speed: 0.009, coreGlow: 0.65, ringAlpha: 0.6, color: [0, 242, 254], coreColor: [79, 172, 254] },
+    wake_detected: { speed: 0.024, coreGlow: 1.0, ringAlpha: 0.95, color: [0, 242, 254], coreColor: [0, 255, 170] },
+    listening: { speed: 0.022, coreGlow: 0.95, ringAlpha: 0.85, color: [0, 242, 254], coreColor: [0, 255, 170] },
+    thinking: { speed: 0.035, coreGlow: 0.9, ringAlpha: 0.8, color: [155, 81, 224], coreColor: [224, 170, 255] },
+    speaking: { speed: 0.025, coreGlow: 1.0, ringAlpha: 0.95, color: [0, 210, 255], coreColor: [79, 172, 254] },
+    executing: { speed: 0.028, coreGlow: 0.95, ringAlpha: 0.9, color: [0, 210, 255], coreColor: [100, 255, 218] },
+    vision_camera: { speed: 0.028, coreGlow: 0.95, ringAlpha: 0.9, color: [0, 242, 254], coreColor: [0, 210, 255] },
+    vision_screen: { speed: 0.032, coreGlow: 1.0, ringAlpha: 0.95, color: [0, 210, 255], coreColor: [255, 64, 129] },
+    silent: { speed: 0.005, coreGlow: 0.4, ringAlpha: 0.4, color: [0, 180, 216], coreColor: [72, 202, 228] },
+    muted: { speed: 0.004, coreGlow: 0.35, ringAlpha: 0.35, color: [86, 95, 118], coreColor: [86, 95, 118] },
+    error: { speed: 0.015, coreGlow: 0.8, ringAlpha: 0.7, color: [255, 82, 82], coreColor: [255, 23, 68] },
+    offline: { speed: 0.001, coreGlow: 0.15, ringAlpha: 0.2, color: [60, 68, 88], coreColor: [60, 68, 88] }
+  };
+
+  // Presets for Amber Gold
+  const GOLD_PRESETS = {
+    idle: { speed: 0.008, coreGlow: 0.65, ringAlpha: 0.6, color: [255, 215, 0], coreColor: [255, 179, 0] },
+    background_listening: { speed: 0.009, coreGlow: 0.65, ringAlpha: 0.6, color: [255, 215, 0], coreColor: [255, 160, 0] },
+    wake_detected: { speed: 0.024, coreGlow: 1.0, ringAlpha: 0.95, color: [255, 215, 0], coreColor: [255, 235, 59] },
+    listening: { speed: 0.022, coreGlow: 0.95, ringAlpha: 0.9, color: [255, 215, 0], coreColor: [255, 235, 59] },
+    thinking: { speed: 0.035, coreGlow: 0.9, ringAlpha: 0.85, color: [255, 140, 0], coreColor: [255, 193, 7] },
+    speaking: { speed: 0.025, coreGlow: 1.0, ringAlpha: 0.98, color: [255, 223, 0], coreColor: [255, 160, 0] },
+    executing: { speed: 0.028, coreGlow: 0.95, ringAlpha: 0.9, color: [255, 215, 0], coreColor: [255, 179, 0] },
+    vision_camera: { speed: 0.028, coreGlow: 0.95, ringAlpha: 0.9, color: [255, 215, 0], coreColor: [255, 179, 0] },
+    vision_screen: { speed: 0.032, coreGlow: 1.0, ringAlpha: 0.95, color: [255, 179, 0], coreColor: [255, 82, 82] },
+    silent: { speed: 0.005, coreGlow: 0.4, ringAlpha: 0.4, color: [200, 160, 40], coreColor: [220, 180, 50] },
+    muted: { speed: 0.004, coreGlow: 0.35, ringAlpha: 0.35, color: [120, 100, 60], coreColor: [100, 85, 50] },
+    error: { speed: 0.015, coreGlow: 0.8, ringAlpha: 0.7, color: [255, 82, 82], coreColor: [255, 23, 68] },
+    offline: { speed: 0.001, coreGlow: 0.15, ringAlpha: 0.2, color: [60, 50, 35], coreColor: [50, 40, 30] }
+  };
+
+  // Presets for Red Theme
+  const RED_PRESETS = {
+    idle: { speed: 0.008, coreGlow: 0.65, ringAlpha: 0.6, color: [255, 23, 68], coreColor: [255, 80, 100] },
+    background_listening: { speed: 0.009, coreGlow: 0.65, ringAlpha: 0.6, color: [255, 23, 68], coreColor: [255, 42, 77] },
+    wake_detected: { speed: 0.024, coreGlow: 1.0, ringAlpha: 0.95, color: [255, 23, 68], coreColor: [255, 110, 130] },
+    listening: { speed: 0.022, coreGlow: 0.95, ringAlpha: 0.9, color: [255, 23, 68], coreColor: [255, 110, 130] },
+    thinking: { speed: 0.035, coreGlow: 0.9, ringAlpha: 0.85, color: [213, 0, 0], coreColor: [255, 60, 90] },
+    speaking: { speed: 0.025, coreGlow: 1.0, ringAlpha: 0.98, color: [255, 42, 77], coreColor: [255, 23, 68] },
+    executing: { speed: 0.028, coreGlow: 0.95, ringAlpha: 0.9, color: [255, 42, 77], coreColor: [255, 80, 100] },
+    vision_camera: { speed: 0.028, coreGlow: 0.95, ringAlpha: 0.9, color: [255, 23, 68], coreColor: [255, 42, 77] },
+    vision_screen: { speed: 0.032, coreGlow: 1.0, ringAlpha: 0.95, color: [255, 42, 77], coreColor: [255, 90, 110] },
+    silent: { speed: 0.005, coreGlow: 0.4, ringAlpha: 0.4, color: [180, 40, 60], coreColor: [200, 50, 70] },
+    muted: { speed: 0.004, coreGlow: 0.35, ringAlpha: 0.35, color: [110, 35, 45], coreColor: [90, 25, 35] },
+    error: { speed: 0.015, coreGlow: 0.8, ringAlpha: 0.7, color: [255, 0, 40], coreColor: [200, 0, 30] },
+    offline: { speed: 0.001, coreGlow: 0.15, ringAlpha: 0.2, color: [55, 20, 25], coreColor: [45, 15, 20] }
+  };
+
+  function getPresets() {
+    if (activeTheme === 'AMBER_GOLD') return GOLD_PRESETS;
+    if (activeTheme === 'RED') return RED_PRESETS;
+    return BLUE_PRESETS;
+  }
+
+  let currentState = 'idle';
+  let curProps = { ...getPresets().idle };
+  let targetProps = { ...getPresets().idle };
+  let audioLevel = 0.0;
+  let targetAudioLevel = 0.0;
+  let rotX = 0.35;
+  let rotY = 0;
+  let rotZ = 0;
+  let time = 0;
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function lerpColor(c1, c2, t) {
+    return [
+      Math.round(lerp(c1[0], c2[0], t)),
+      Math.round(lerp(c1[1], c2[1], t)),
+      Math.round(lerp(c1[2], c2[2], t))
+    ];
+  }
+
+  window.setOrbTheme = function(themeName) {
+    activeTheme = (themeName || 'ARC_BLUE').toUpperCase();
+    const presets = getPresets();
+    if (presets[currentState]) {
+      targetProps = presets[currentState];
+    }
+  };
+
+  window.setOrbState = function(stateName, level) {
+    const s = (stateName || 'idle').toLowerCase();
+    const presets = getPresets();
+    if (presets[s]) {
+      currentState = s;
+      targetProps = presets[s];
+    }
+    if (typeof level === 'number') {
+      targetAudioLevel = Math.max(0, Math.min(1, level));
+    }
+  };
+
+  window.setAudioLevel = function(level) {
+    if (typeof level === 'number') {
+      targetAudioLevel = Math.max(0, Math.min(1, level));
+    }
+  };
+
+  const rings = [
+    { radius: 100, tiltX: 0.1, tiltZ: 0.2, segments: 120 },
+    { radius: 98, tiltX: Math.PI / 2, tiltZ: 0, segments: 100 },
+    { radius: 98, tiltX: 0, tiltZ: Math.PI / 2, segments: 100 },
+    { radius: 100, tiltX: Math.PI / 4, tiltZ: Math.PI / 4, segments: 100 },
+    { radius: 100, tiltX: -Math.PI / 4, tiltZ: Math.PI / 4, segments: 100 }
+  ];
+  const latitudeRings = [-70, -50, -30, -10, 10, 30, 50, 70];
+
+  function project3D(x, y, z, cx, cy, fov) {
+    const scale = fov / (fov + z);
+    return { x: cx + x * scale, y: cy + y * scale };
+  }
+  function rotateY(x, z, angle) {
+    const cos = Math.cos(angle); const sin = Math.sin(angle);
+    return { x: x * cos - z * sin, z: x * sin + z * cos };
+  }
+  function rotateX(y, z, angle) {
+    const cos = Math.cos(angle); const sin = Math.sin(angle);
+    return { y: y * cos - z * sin, z: y * sin + z * cos };
+  }
+
+  function render() {
+    time += 1;
+    audioLevel = lerp(audioLevel, targetAudioLevel, 0.25);
+    targetAudioLevel = lerp(targetAudioLevel, 0, 0.08);
+
+    curProps.speed = lerp(curProps.speed, targetProps.speed, 0.08);
+    curProps.coreGlow = lerp(curProps.coreGlow, targetProps.coreGlow, 0.08);
+    curProps.ringAlpha = lerp(curProps.ringAlpha, targetProps.ringAlpha, 0.08);
+    curProps.color = lerpColor(curProps.color, targetProps.color, 0.08);
+    curProps.coreColor = lerpColor(curProps.coreColor, targetProps.coreColor, 0.08);
+
+    rotY += curProps.speed;
+    rotZ += curProps.speed * 0.4;
+
+    ctx.clearRect(0, 0, width, height);
+    const cx = width / 2;
+    const cy = height / 2;
+    const fov = 350;
+    const baseSphereRadius = Math.min(width, height) * 0.32;
+    const currentRadius = baseSphereRadius * (1 + audioLevel * 0.25);
+
+    // Latitudes
+    latitudeRings.forEach(latY => {
+      const yNorm = (latY / 100) * currentRadius;
+      const rAtY = Math.sqrt(Math.max(0, currentRadius * currentRadius - yNorm * yNorm));
+      const latAlpha = curProps.ringAlpha * 0.35 * (1 - Math.abs(latY) / 110);
+      ctx.beginPath();
+      let first = true;
+      for (let i = 0; i <= 48; i++) {
+        const theta = (i / 48) * Math.PI * 2;
+        let px = Math.cos(theta) * rAtY;
+        let py = yNorm;
+        let pz = Math.sin(theta) * rAtY;
+        let rot1 = rotateY(px, pz, rotY * 0.8);
+        px = rot1.x; pz = rot1.z;
+        let rot2 = rotateX(py, pz, rotX);
+        py = rot2.y; pz = rot2.z;
+        const proj = project3D(px, py, pz, cx, cy, fov);
+        if (first) { ctx.moveTo(proj.x, proj.y); first = false; }
+        else { ctx.lineTo(proj.x, proj.y); }
+      }
+      ctx.strokeStyle = `rgba(${curProps.color.join(',')}, ${latAlpha})`;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    });
+
+    // Gyroscope Rings
+    rings.forEach((ring, idx) => {
+      const r = (ring.radius / 100) * currentRadius;
+      const alpha = curProps.ringAlpha * (idx === 0 ? 0.95 : 0.6);
+      ctx.beginPath();
+      let first = true;
+      for (let i = 0; i <= ring.segments; i++) {
+        const theta = (i / ring.segments) * Math.PI * 2;
+        let px = Math.cos(theta) * r;
+        let py = Math.sin(theta) * r;
+        let pz = 0;
+        let rotTiltZ = { x: px * Math.cos(ring.tiltZ) - py * Math.sin(ring.tiltZ), y: px * Math.sin(ring.tiltZ) + py * Math.cos(ring.tiltZ) };
+        px = rotTiltZ.x; py = rotTiltZ.y;
+        let rotTiltX = rotateX(py, pz, ring.tiltX);
+        py = rotTiltX.y; pz = rotTiltX.z;
+        let rot1 = rotateY(px, pz, rotY * (idx % 2 === 0 ? 1 : -0.7));
+        px = rot1.x; pz = rot1.z;
+        let rot2 = rotateX(py, pz, rotX);
+        py = rot2.y; pz = rot2.z;
+        const proj = project3D(px, py, pz, cx, cy, fov);
+        if (first) { ctx.moveTo(proj.x, proj.y); first = false; }
+        else { ctx.lineTo(proj.x, proj.y); }
+        if (i % 8 === 0 && Math.random() > 0.3) {
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.7})`;
+          ctx.fillRect(proj.x - 0.75, proj.y - 0.75, 1.5, 1.5);
+        }
+      }
+      ctx.strokeStyle = `rgba(${curProps.color.join(',')}, ${alpha})`;
+      ctx.lineWidth = idx === 0 ? 1.4 : 1.0;
+      ctx.stroke();
+    });
+
+    // Nucleus
+    const coreRadius = (15 + audioLevel * 14) * (1 + Math.sin(time * 0.05) * 0.08);
+    const halo = ctx.createRadialGradient(cx, cy, 2, cx, cy, coreRadius * 2.8);
+    halo.addColorStop(0, `rgba(${curProps.coreColor.join(',')}, ${curProps.coreGlow * 0.9})`);
+    halo.addColorStop(0.3, `rgba(${curProps.coreColor.join(',')}, ${curProps.coreGlow * 0.4})`);
+    halo.addColorStop(1, `rgba(0, 0, 0, 0)`);
+    ctx.beginPath();
+    ctx.arc(cx, cy, coreRadius * 2.8, 0, Math.PI * 2);
+    ctx.fillStyle = halo;
+    ctx.fill();
+
+    for (let c = 0; c < 3; c++) {
+      ctx.beginPath();
+      let first = true;
+      const angleOffset = (c * Math.PI) / 3 + time * 0.02;
+      for (let i = 0; i <= 12; i++) {
+        const theta = (i / 12) * Math.PI * 2;
+        let px = Math.cos(theta) * coreRadius;
+        let py = Math.sin(theta) * coreRadius;
+        let pz = 0;
+        let rot = rotateY(px, pz, angleOffset);
+        px = rot.x; pz = rot.z;
+        rot = rotateX(py, pz, rotX);
+        py = rot.y; pz = rot.z;
+        const proj = project3D(px, py, pz, cx, cy, fov);
+        if (first) { ctx.moveTo(proj.x, proj.y); first = false; }
+        else { ctx.lineTo(proj.x, proj.y); }
+      }
+      ctx.strokeStyle = `rgba(255, 255, 255, ${curProps.coreGlow * 0.8})`;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  resize();
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

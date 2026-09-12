@@ -1,0 +1,2277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JARVIS Voice Assistant — Live System Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #00F2FE;
+      --accent-neon: #00D2FF;
+      --accent-soft: #4A90E2;
+      --accent-glow: rgba(0, 242, 254, 0.45);
+      --card-bg: #0E111A;
+      --border-subtle: #20273D;
+      --chip-active-bg: linear-gradient(135deg, #00F2FE, #0077B6);
+      --chip-active-text: #050507;
+      --status-green: #00E676;
+      --status-red: #FF1744;
+      --status-amber: #FFB300;
+    }
+
+    [data-theme="AMBER_GOLD"] {
+      --accent: #FFD700;
+      --accent-neon: #FFB300;
+      --accent-soft: #FFA000;
+      --accent-glow: rgba(255, 215, 0, 0.45);
+      --card-bg: #12100A;
+      --border-subtle: #3A2F18;
+      --chip-active-bg: linear-gradient(135deg, #FFD700, #FF8C00);
+      --chip-active-text: #050507;
+    }
+
+    [data-theme="RED"] {
+      --accent: #FF1744;
+      --accent-neon: #FF2A4D;
+      --accent-soft: #D50000;
+      --accent-glow: rgba(255, 23, 68, 0.45);
+      --card-bg: #14080A;
+      --border-subtle: #3D1418;
+      --chip-active-bg: linear-gradient(135deg, #FF2A4D, #B71C1C);
+      --chip-active-text: #050507;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    body {
+      background: radial-gradient(circle at center, #0d121f 0%, #030407 100%);
+      color: #F4F4F6;
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      overflow-x: hidden;
+      transition: background 0.4s ease;
+    }
+
+    body.gold-mode {
+      background: radial-gradient(circle at center, #1a160c 0%, #060503 100%);
+    }
+
+    body.red-mode {
+      background: radial-gradient(circle at center, #20080d 0%, #060203 100%);
+    }
+
+    .preview-header {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .preview-header h1 {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      text-shadow: 0 0 16px var(--accent-glow);
+      transition: color 0.3s;
+    }
+
+    .preview-header p {
+      color: #9BA3B8;
+      font-size: 12.5px;
+      margin-top: 3px;
+    }
+
+    /* Phone Shell */
+    .phone-wrapper {
+      position: relative;
+      width: 380px;
+      height: 790px;
+      background: #050507;
+      border-radius: 50px;
+      border: 6px solid #1E2638;
+      box-shadow: 0 0 0 2px #0a0d14, 0 25px 60px rgba(0,0,0,0.9), 0 0 45px var(--accent-glow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: box-shadow 0.4s;
+    }
+
+    .phone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #050507;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .phone-notch {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 24px;
+      background: #0B0E17;
+      border-radius: 12px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .notch-camera { width: 10px; height: 10px; border-radius: 50%; background: #151d2f; }
+    .notch-speaker { width: 38px; height: 4px; border-radius: 2px; background: #151d2f; }
+
+    /* Left Edge Drag Detection Zone */
+    .left-edge-detector {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 28px;
+      height: 100%;
+      z-index: 60;
+      cursor: ew-resize;
+    }
+
+    /* Top Capsule Header */
+    .top-capsule-bar {
+      margin: 44px 16px 0 16px;
+      background: #0C101A;
+      border: 1.2px solid var(--border-subtle);
+      border-radius: 28px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      z-index: 10;
+    }
+
+    .top-capsule-bar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20%;
+      width: 60%;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    .capsule-left { display: flex; flex-direction: column; }
+    .battery-text { font-size: 14px; font-weight: 700; color: #F4F4F6; }
+    .ram-text { font-size: 10px; color: #565F76; font-weight: 500; }
+    .capsule-center { text-align: center; cursor: pointer; }
+    .capsule-title { font-size: 16px; font-weight: 900; letter-spacing: 0.22em; color: #F4F4F6; }
+    .capsule-subtitle { font-size: 9px; font-weight: 600; letter-spacing: 0.15em; color: #565F76; }
+    .capsule-right { display: flex; align-items: center; gap: 10px; }
+    .time-text { font-size: 14px; font-weight: 600; color: #F4F4F6; }
+
+    .settings-btn {
+      width: 32px; height: 32px; background: transparent; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .settings-btn svg { width: 20px; height: 20px; fill: #F4F4F6; }
+    .settings-btn:hover svg { fill: var(--accent); }
+
+    /* Screen Vision Active Banner */
+    .screen-vision-banner {
+      margin: 8px 16px 0 16px;
+      background: rgba(10, 14, 24, 0.95);
+      border: 1.5px solid var(--accent);
+      border-radius: 20px;
+      padding: 8px 14px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 20;
+      box-shadow: 0 0 15px var(--accent-glow);
+      animation: fadeIn 0.2s ease;
+    }
+
+    .screen-vision-banner.active { display: flex; }
+
+    .vision-dot {
+      width: 9px; height: 9px; border-radius: 50%; background: #FF1744;
+      box-shadow: 0 0 8px #FF1744; animation: pulseRed 1.2s infinite;
+    }
+
+    @keyframes pulseRed {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .vision-text {
+      font-size: 11.5px; font-weight: 800; color: var(--accent); letter-spacing: 0.08em;
+      margin-left: 8px; flex: 1;
+    }
+
+    .btn-vision-stop {
+      background: linear-gradient(135deg, #FF1744, #D50000);
+      color: #FFF; border: none; border-radius: 14px; padding: 4px 12px;
+      font-size: 11px; font-weight: 800; cursor: pointer; letter-spacing: 0.05em;
+    }
+
+    /* 3D Gyroscope Orb Container */
+    .orb-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    #gyroCanvas { width: 320px; height: 320px; }
+
+    /* Floating Camera Draggable Window */
+    .floating-camera-card {
+      position: absolute;
+      top: 150px;
+      left: 30px;
+      width: 175px;
+      height: 235px;
+      background: #050507;
+      border: 2px solid var(--accent);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px var(--accent-glow);
+      z-index: 70;
+      display: none;
+      flex-direction: column;
+      cursor: grab;
+    }
+
+    .floating-camera-card.active { display: flex; }
+    .floating-camera-card:active { cursor: grabbing; }
+
+    .camera-hud-header {
+      background: rgba(5, 5, 7, 0.85);
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      z-index: 2;
+    }
+
+    .camera-hud-badge {
+      font-size: 9px; font-weight: 800; color: var(--accent); letter-spacing: 0.08em;
+    }
+
+    .camera-hud-actions {
+      display: flex; align-items: center; gap: 4px;
+    }
+
+    .cam-action-btn {
+      width: 24px; height: 24px; border-radius: 50%; background: #111624; border: none;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .cam-action-btn svg { width: 13px; height: 13px; fill: #F4F4F6; }
+    .cam-action-btn.active svg { fill: #FFB300; }
+    .cam-action-btn.close svg { fill: #FF1744; }
+
+    .camera-viewport {
+      flex: 1;
+      background: #080c14;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .camera-viewport video {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+
+    .camera-reticle {
+      position: absolute; width: 60px; height: 60px;
+      border: 1px dashed var(--accent); border-radius: 50%; opacity: 0.5;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+
+    .camera-reticle-dot {
+      width: 6px; height: 6px; background: var(--accent); border-radius: 50%;
+    }
+
+    .camera-drag-hint {
+      position: absolute; bottom: 6px; font-size: 8.5px; font-weight: 700;
+      color: rgba(255,255,255,0.6); letter-spacing: 0.05em; text-align: center;
+      width: 100%; pointer-events: none;
+    }
+
+    /* Floating Vision/Camera Dock Popup (Screenshot 4) */
+    .vision-dock-popup {
+      position: absolute;
+      bottom: 108px;
+      right: 28px;
+      height: 48px;
+      background: #0D111C;
+      border: 1.2px solid var(--border-subtle);
+      border-radius: 24px;
+      padding: 0 14px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.7);
+      z-index: 50;
+      animation: popFade 0.2s ease;
+    }
+
+    .vision-dock-popup.visible { display: flex; }
+
+    @keyframes popFade {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dock-action-btn {
+      background: none; border: none; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 8px; border-radius: 12px;
+      transition: background 0.2s;
+    }
+    .dock-action-btn:hover { background: rgba(255,255,255,0.06); }
+    .dock-action-btn svg { width: 17px; height: 17px; fill: var(--accent); }
+    .dock-action-btn span { font-size: 12.5px; font-weight: 700; color: #F4F4F6; letter-spacing: 0.05em; }
+    .dock-divider { width: 1px; height: 18px; background: var(--border-subtle); }
+
+    /* Bottom Capsule Bar */
+    .bottom-capsule-bar {
+      margin: 0 28px 36px 28px;
+      height: 60px;
+      background: #0D111C;
+      border: 1.2px solid var(--border-subtle);
+      border-radius: 30px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+      position: relative;
+      z-index: 40;
+    }
+
+    .status-group { display: flex; align-items: center; gap: 10px; }
+    .status-dot {
+      width: 10px; height: 10px; border-radius: 50%; background: var(--accent-soft);
+      box-shadow: 0 0 8px var(--accent-soft); transition: all 0.3s;
+    }
+    .status-dot.active { background: #00E676; box-shadow: 0 0 10px #00E676; }
+    .status-dot.red { background: #FF1744; box-shadow: 0 0 10px #FF1744; }
+    .status-dot.amber { background: #FFB300; box-shadow: 0 0 10px #FFB300; }
+    .status-dot.muted { background: #565F76; box-shadow: none; }
+    .status-label { font-size: 15px; font-weight: 600; color: #F4F4F6; }
+
+    .controls-group { display: flex; align-items: center; gap: 12px; }
+    .icon-click { background: none; border: none; cursor: pointer; display: flex; align-items: center; }
+    .mic-icon svg { width: 22px; height: 22px; fill: #9BA3B8; }
+    .mic-icon.muted svg { fill: #FF1744; }
+    .divider-vert { width: 1px; height: 22px; background: var(--border-subtle); }
+
+    .power-circle {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: #101524; border: 1.5px solid var(--border-subtle);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .power-circle svg { width: 22px; height: 22px; fill: var(--accent-soft); }
+    .power-circle.active { border-color: var(--accent); box-shadow: 0 0 18px var(--accent-glow); }
+    .power-circle.active svg { fill: var(--accent); }
+    .chevron-icon svg { width: 22px; height: 22px; fill: var(--accent-soft); }
+
+    /* Left-Swipe History Drawer (Screenshot 2) */
+    .drawer-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.65); z-index: 200; display: none;
+      backdrop-filter: blur(2px);
+    }
+    .drawer-overlay.active { display: block; }
+
+    .history-drawer {
+      position: absolute; top: 0; left: 0; width: 310px; height: 100%;
+      background: #050507; z-index: 210;
+      transform: translateX(-100%);
+      transition: transform 0.28s cubic-bezier(0.1, 0.9, 0.2, 1);
+      display: flex; flex-direction: column; padding-top: 48px; padding-bottom: 20px;
+      box-shadow: 10px 0 40px rgba(0,0,0,0.9);
+    }
+    .history-drawer.open { transform: translateX(0); }
+    .history-drawer.dragging { transition: none; }
+
+    .drawer-header {
+      padding: 0 20px 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #151A29;
+    }
+    .drawer-title-box h2 { font-size: 18px; font-weight: 900; letter-spacing: 0.1em; color: var(--accent); line-height: 1.15; }
+    .drawer-title-box span { font-size: 10.5px; font-weight: 700; color: #565F76; letter-spacing: 0.12em; display: block; margin-top: 4px; }
+    .drawer-actions { display: flex; align-items: center; gap: 8px; }
+    .drawer-actions button { background: none; border: none; cursor: pointer; }
+    .drawer-actions svg { width: 20px; height: 20px; }
+
+    .drawer-messages {
+      flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px;
+    }
+    .bubble-user {
+      align-self: flex-end; max-width: 80%;
+      background: linear-gradient(135deg, #00C6FF, #0072FF);
+      color: #FFF; padding: 10px 14px; border-radius: 18px 18px 2px 18px;
+      font-size: 13px; font-weight: 500; box-shadow: 0 4px 12px rgba(0, 114, 255, 0.3);
+    }
+    [data-theme="AMBER_GOLD"] .bubble-user {
+      background: linear-gradient(135deg, #FFD700, #FF8C00);
+      color: #050507; font-weight: 600;
+    }
+    .bubble-jarvis {
+      align-self: flex-start; max-width: 82%;
+      background: #0E121E; border: 1px solid #1C2337;
+      color: #E2E8F0; padding: 10px 14px; border-radius: 18px 18px 18px 2px;
+      font-size: 13px; line-height: 1.4;
+    }
+
+    .drawer-input-bar {
+      padding: 10px 16px 0 16px; display: flex; gap: 10px; align-items: center;
+    }
+    .input-pill {
+      flex: 1; height: 44px; background: #0E121E; border: 1px solid #1C2337;
+      border-radius: 22px; padding: 0 16px; color: #FFF; font-size: 13px; outline: none;
+    }
+    .send-pill {
+      width: 44px; height: 44px; border-radius: 50%; background: var(--accent);
+      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .send-pill svg { width: 18px; height: 18px; fill: #050507; }
+
+    /* Screen Pages (Settings, Permissions) */
+    .screen-page {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: #050507; z-index: 150; display: none; flex-direction: column;
+      padding-top: 48px;
+    }
+    .screen-page.active { display: flex; }
+
+    .page-header {
+      padding: 0 16px 12px 16px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .page-title {
+      font-size: 18px; font-weight: 900; letter-spacing: 0.1em; color: var(--accent);
+    }
+
+    .scroll-body {
+      flex: 1; overflow-y: auto; padding: 0 16px 110px 16px; display: flex; flex-direction: column;
+    }
+
+    .section-label {
+      font-size: 12px; font-weight: 800; color: #565F76; letter-spacing: 0.08em;
+      margin-top: 24px; margin-bottom: 8px;
+    }
+
+    .config-card {
+      background: #0E111A; border: 1px solid var(--border-subtle); border-radius: 20px;
+      padding: 20px; display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .input-box {
+      height: 48px; background: #07090F; border: 1px solid var(--border-subtle);
+      border-radius: 14px; padding: 0 16px; color: #F4F4F6; font-size: 13.5px; outline: none; width: 100%;
+    }
+
+    /* Custom Animated Sliding Toggle Switch */
+    .custom-toggle {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+    .custom-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .custom-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #121624;
+      border: 1px solid var(--border-subtle);
+      transition: all 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+      border-radius: 28px;
+    }
+    .custom-slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #8E98B0;
+      transition: all 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+      border-radius: 50%;
+    }
+    .custom-toggle input:checked + .custom-slider {
+      background: var(--chip-active-bg);
+      border-color: transparent;
+      box-shadow: 0 2px 14px var(--accent-glow);
+    }
+    .custom-toggle input:checked + .custom-slider:before {
+      transform: translateX(20px);
+      background-color: var(--chip-active-text);
+    }
+
+    /* Voice Chips */
+    .voice-chips-row {
+      display: flex; gap: 10px; overflow-x: auto; padding-bottom: 2px;
+    }
+    .voice-chip {
+      background: #07090F; border: 1px solid var(--border-subtle); border-radius: 16px;
+      padding: 10px 20px; font-size: 12.5px; font-weight: 700; color: #9BA3B8; cursor: pointer; white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .voice-chip.active {
+      background: var(--chip-active-bg); color: var(--chip-active-text); border-color: transparent;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    /* Personality Matrix 3-Way Sliding Segmented Control */
+    .personality-segmented-container {
+      position: relative;
+      display: flex;
+      background: #07090F;
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 3px;
+      height: 52px;
+    }
+    .personality-slider-pill {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: calc((100% - 6px) / 3);
+      height: calc(100% - 6px);
+      background: var(--chip-active-bg);
+      border-radius: 13px;
+      transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+      box-shadow: 0 2px 12px var(--accent-glow);
+      z-index: 1;
+    }
+    .personality-tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      z-index: 2;
+      cursor: pointer;
+      border-radius: 13px;
+      transition: color 0.2s;
+    }
+    .personality-tab svg { width: 16px; height: 16px; fill: #9BA3B8; transition: fill 0.2s; }
+    .personality-tab span { font-size: 11px; font-weight: 800; color: #9BA3B8; transition: color 0.2s; letter-spacing: 0.02em; }
+    .personality-tab.active svg { fill: var(--chip-active-text); }
+    .personality-tab.active span { color: var(--chip-active-text); }
+
+    /* Sliding Theme Segmented Control */
+    .theme-segmented-container {
+      position: relative;
+      display: flex;
+      background: #07090F;
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 3px;
+      height: 52px;
+    }
+    .theme-slider-pill {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: calc((100% - 6px) / 3);
+      height: calc(100% - 6px);
+      background: var(--chip-active-bg);
+      border-radius: 13px;
+      transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+      box-shadow: 0 2px 12px var(--accent-glow);
+      z-index: 1;
+    }
+    .theme-tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      z-index: 2;
+      cursor: pointer;
+      border-radius: 13px;
+    }
+    .theme-tab svg { width: 15px; height: 15px; fill: #9BA3B8; transition: fill 0.2s; }
+    .theme-tab span { font-size: 11px; font-weight: 800; color: #9BA3B8; transition: color 0.2s; letter-spacing: 0.04em; }
+    .theme-tab.active span { color: var(--chip-active-text); }
+
+    /* EXACT "SAVE & APPLY" BUTTON */
+    .save-config-btn {
+      margin-top: 32px; width: 100%; height: 58px;
+      background: var(--chip-active-bg);
+      border: none; border-radius: 18px; font-size: 15px; font-weight: 900;
+      color: #050507; cursor: pointer; letter-spacing: 0.08em;
+      box-shadow: 0 6px 25px var(--accent-glow);
+      transition: transform 0.12s, box-shadow 0.2s;
+    }
+    .save-config-btn:active { transform: scale(0.97); }
+
+    /* Permissions Rows */
+    .perm-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; border-bottom: 1px solid #171E30; cursor: pointer;
+    }
+    .perm-row:last-child { border-bottom: none; }
+    .perm-info h4 { font-size: 13.5px; font-weight: 700; color: #F4F4F6; }
+    .perm-info p { font-size: 11px; color: #565F76; margin-top: 2px; }
+    .perm-badge {
+      background: #111624; border: 1px solid var(--accent); border-radius: 16px;
+      padding: 4px 10px; font-size: 10px; font-weight: 800; color: #00E676; letter-spacing: 0.05em;
+    }
+    .perm-badge.amber { color: #FFB300; border-color: #FFB300; }
+    .perm-badge.red { color: #FF1744; border-color: #FF1744; }
+
+    /* Simulation Guide */
+    .sim-guide {
+      margin-top: 14px; background: rgba(14, 17, 26, 0.85); border: 1px solid #20273D;
+      padding: 10px 20px; border-radius: 16px; display: flex; align-items: center; gap: 16px;
+      font-size: 12px; color: #9BA3B8;
+    }
+    .sim-guide span { color: var(--accent); font-weight: 600; }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 0 !important;
+        margin: 0 !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
+      }
+      .preview-header, .sim-guide {
+        display: none !important;
+      }
+      .phone-wrapper {
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+      .phone-notch {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body data-theme="ARC_BLUE">
+
+  <div class="preview-header">
+    <h1 id="topHeadline">ASSISTANT</h1>
+    <p>Powered by JARVIS • Real Android APK • Official Icon • 3-Step Onboarding Flow</p>
+    <div style="margin-top:8px;">
+      <button id="btnLaunchOnboarding" style="background:#0E111A; border:1px solid var(--accent); color:var(--accent); border-radius:12px; padding:6px 14px; font-weight:700; font-size:11.5px; cursor:pointer; letter-spacing:0.04em;">SIMULATE FIRST LAUNCH ONBOARDING</button>
+    </div>
+  </div>
+
+  <div class="phone-wrapper" id="phoneArea">
+    <div class="phone-screen" id="phoneScreen">
+      
+      <!-- Notch -->
+      <div class="phone-notch">
+        <div class="notch-camera"></div>
+        <div class="notch-speaker"></div>
+      </div>
+
+      <!-- Left Edge Swipe Detection Trigger -->
+      <div class="left-edge-detector" id="edgeDetector" title="Swipe right to open history"></div>
+
+      <!-- MAIN SCREEN VIEW -->
+      <div class="main-screen-container" style="height:100%; display:flex; flex-direction:column; position:relative;">
+        
+        <!-- Top Capsule Bar -->
+        <div class="top-capsule-bar">
+          <div class="capsule-left">
+            <div class="battery-text">37%</div>
+            <div class="ram-text">RAM 73%</div>
+          </div>
+          <div class="capsule-center" id="btnHeaderHistory">
+            <div class="capsule-title">ASSISTANT</div>
+            <div class="capsule-subtitle">POWERED BY JARVIS</div>
+          </div>
+          <div class="capsule-right">
+            <div class="time-text" id="clock">14:50</div>
+            <button class="settings-btn" id="btnOpenConfig" title="Settings">
+              <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94c0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48l2.03,1.58C4.84,11.36 4.8,11.69 4.8,12s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6s3.6,1.62 3.6,3.6S13.98,15.6 12,15.6z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Screen Vision Active Banner -->
+        <div class="screen-vision-banner" id="screenVisionBanner">
+          <div class="vision-dot"></div>
+          <div class="vision-text">VISION ACTIVE • SCREEN</div>
+          <button class="btn-vision-stop" id="btnStopVision">STOP</button>
+        </div>
+
+        <!-- 3D Gyroscope Orb Container (Untouched geometry & math) -->
+        <div class="orb-container">
+          <canvas id="gyroCanvas"></canvas>
+        </div>
+
+        <!-- Draggable Floating Camera Window (In-App Viewfinder) -->
+        <div class="floating-camera-card" id="floatingCamera">
+          <div class="camera-hud-header" id="cameraDragHandle">
+            <span class="camera-hud-badge">CAMERA ACTIVE</span>
+            <div class="camera-hud-actions">
+              <button class="cam-action-btn" id="btnTorch" title="Torch">
+                <svg viewBox="0 0 24 24"><path d="M7,2v11h3v9l7,-12h-4l4,-8z"/></svg>
+              </button>
+              <button class="cam-action-btn" id="btnFlipLens" title="Flip Camera">
+                <svg viewBox="0 0 24 24"><path d="M20,4h-3.17L15,2H9L7.17,4H4c-1.1,0 -2,0.9 -2,2v12c0,1.1 0.9,2 2,2h16c1.1,0 2,-0.9 2,-2V6c0,-1.1 -0.9,-2 -2,-2zm-5,11.5V13H9v2.5L5.5,12 9,8.5V11h6V8.5l3.5,3.5 -3.5,3.5z"/></svg>
+              </button>
+              <button class="cam-action-btn close" id="btnCloseCam" title="Close">
+                <svg viewBox="0 0 24 24"><path d="M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="camera-viewport">
+            <video id="liveVideoFeed" autoplay playsinline muted></video>
+            <div class="camera-reticle"><div class="camera-reticle-dot"></div></div>
+            <div class="camera-drag-hint">DRAG TO MOVE</div>
+          </div>
+        </div>
+
+        <!-- Floating Camera/Vision Dock Popup (Screenshot 4) -->
+        <div class="vision-dock-popup" id="visionDock">
+          <button class="dock-action-btn" id="btnOpenRealCamera">
+            <svg viewBox="0 0 24 24"><path d="M9,2L7.17,4H4c-1.1,0 -2,0.9 -2,2v12c0,1.1 0.9,2 2,2h16c1.1,0 2,-0.9 2,-2V6c0,-1.1 -0.9,-2 -2,-2zm3,15c-2.76,0 -5,-2.24 -5,-5s2.24,-5 5,-5 5,2.24 5,5 -2.24,5 -5,5z"/></svg>
+            <span>Camera</span>
+          </button>
+          <div class="dock-divider"></div>
+          <button class="dock-action-btn" id="btnOpenScreenVision">
+            <svg viewBox="0 0 24 24"><path d="M12,4.5C7,4.5 2.73,7.61 1,12c1.73,4.39 6,7.5 11,7.5s9.27,-3.11 11,-7.5c-1.73,-4.39 -6,-7.5 -11,-7.5zm0,12.5c-2.76,0 -5,-2.24 -5,-5s2.24,-5 5,-5 5,2.24 5,5 -2.24,5 -5,5zm0,-8c-1.66,0 -3,1.34 -3,3s1.34,3 3,3 3,-1.34 3,-3 -1.34,-3 -3,-3z"/></svg>
+            <span>Vision</span>
+          </button>
+        </div>
+
+        <!-- Bottom Capsule Bar -->
+        <div class="bottom-capsule-bar">
+          <div class="status-group">
+            <div class="status-dot active" id="statusDot"></div>
+            <div class="status-label" id="statusLabel">Speak</div>
+          </div>
+          <div class="controls-group">
+            <button class="icon-click mic-icon" id="btnMic">
+              <svg viewBox="0 0 24 24" id="micSvg"><path d="M12,14c1.66,0 3,-1.34 3,-3V5c0,-1.66 -1.34,-3 -3,-3S9,3.34 9,5v6C9,12.66 10.34,14 12,14zM17.3,11c0,3 -2.54,5.1 -5.3,5.1S6.7,14 6.7,11H5c0,3.41 2.72,6.23 6,6.72V21h2v-3.28c3.28,-0.48 6,-3.3 6,-6.72H17.3z"/></svg>
+            </button>
+            <div class="divider-vert"></div>
+            <div class="power-circle active" id="btnPower">
+              <svg viewBox="0 0 24 24"><path d="M13,3h-2v10h2V3zM17.83,5.17l-1.42,1.42C17.99,7.86 19,9.81 19,12c0,3.87 -3.13,7 -7,7s-7,-3.13 -7,-7c0,-2.19 1.01,-4.14 2.58,-5.42L6.17,5.17C4.23,6.82 3,9.26 3,12c0,4.97 4.03,9 9,9s9,-4.03 9,-9C21,9.26 19.77,6.82 17.83,5.17z"/></svg>
+            </div>
+            <button class="icon-click chevron-icon" id="btnChevronToggle" title="Expand Vision Options">
+              <svg viewBox="0 0 24 24"><path d="M12,8l-6,6 1.41,1.41L12,10.83l4.59,4.58L18,14z"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- LEFT-SWIPE HISTORY DRAWER (Screenshot 2) -->
+      <div class="drawer-overlay" id="drawerOverlay"></div>
+      <div class="history-drawer" id="historyDrawer">
+        <div class="drawer-header">
+          <div class="drawer-title-box">
+            <h2>JARVIS CHAT<br>BOT</h2>
+            <span>HINGLISH HISTORY</span>
+          </div>
+          <div class="drawer-actions">
+            <button><svg viewBox="0 0 24 24" fill="#9BA3B8"><path d="M16,11c1.66,0 2.99,-1.34 2.99,-3S17.66,5 16,5c-1.66,0 -3,1.34 -3,3s1.34,3 3,3zM8,11c1.66,0 2.99,-1.34 2.99,-3S9.66,5 8,5C6.34,5 5,6.34 5,8s1.34,3 3,3zM8,13c-2.33,0 -7,1.17 -7,3.5V19h14v-2.5c0,-2.33 -4.67,-3.5 -7,-3.5zM16,13c-0.29,0 -0.62,0.02 -0.97,0.05 1.16,0.84 1.97,1.97 1.97,3.45V19h6v-2.5c0,-2.33 -4.67,-3.5 -7,-3.5z"/></svg></button>
+            <button id="btnClearHist"><svg viewBox="0 0 24 24" fill="#FF1744"><path d="M6,19c0,1.1 0.9,2 2,2h8c1.1,0 2,-0.9 2,-2V7H6v12zM19,4h-3.5l-1,-1h-5l-1,1H5v2h14V4z"/></svg></button>
+            <button id="btnCloseHist"><svg viewBox="0 0 24 24" fill="#9BA3B8"><path d="M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12z"/></svg></button>
+          </div>
+        </div>
+        <div class="drawer-messages" id="drawerChatList">
+          <!-- Real conversation turns -->
+        </div>
+        <div class="drawer-input-bar">
+          <input type="text" class="input-pill" id="inputChatText" placeholder="Type in Hinglish...">
+          <button class="send-pill" id="btnSendChat"><svg viewBox="0 0 24 24"><path d="M2.01,21L23,12 2.01,3 2,10l15,2 -15,2z"/></svg></button>
+        </div>
+      </div>
+
+      <!-- SETTINGS SCREEN (JARVIS CONFIG - No Emojis, Sliding Theme Toggle, Large Save Button) -->
+      <div class="screen-page" id="settingsPage">
+        <div class="page-header">
+          <button class="icon-click" id="btnBackFromSettings"><svg viewBox="0 0 24 24" width="22" height="22" fill="#F4F4F6"><path d="M20,11H7.83l5.59,-5.59L12,4l-8,8 8,8 1.41,-1.41L7.83,13H20v-2z"/></svg></button>
+          <span class="page-title">JARVIS CONFIG</span>
+          <button class="icon-click" id="btnResetSettings"><svg viewBox="0 0 24 24" width="20" height="20" fill="var(--accent)"><path d="M12,4V1L8,5l4,4V6c3.31,0 6,2.69 6,6 0,1.01 -0.25,1.97 -0.7,2.8l1.46,1.46C19.54,15.03 20,13.57 20,12c0,-4.42 -3.58,-8 -8,-8zm0,14c-3.31,0 -6,-2.69 -6,-6 0,-1.01 0.25,-1.97 0.7,-2.8L5.24,7.74C4.46,8.97 4,10.43 4,12c0,4.42 3.58,8 8,8v3l4,-4 -4,-4v3z"/></svg></button>
+        </div>
+
+        <div class="scroll-body">
+          <div class="section-label">ACCOUNT &amp; SECURITY</div>
+          <div class="config-card">
+            <span style="font-size:12px; font-weight:700; color:var(--accent);">Gemini API Key</span>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+              <input type="password" class="input-box" id="inputApiKey" placeholder="Paste your Gemini API key" style="margin-top:0; flex:1;">
+              <button id="btnToggleSettingsKeyEye" style="background:#07090F; border:1px solid var(--border-subtle); border-radius:14px; width:48px; height:48px; display:flex; align-items:center; justify-content:center; cursor:pointer; fill:#9BA3B8;">
+                <svg id="svgEyeIconSettings" viewBox="0 0 24 24" width="20" height="20"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              </button>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; margin-top:4px;">
+              <button id="btnTestConfigApiKey" style="background:transparent; border:1px solid var(--accent); color:var(--accent); font-weight:700; font-size:11px; border-radius:10px; padding:6px 12px; cursor:pointer; letter-spacing:0.04em;">TEST CONNECTION</button>
+              <span id="lblConfigApiTestStatus" style="font-size:11px; color:#565F76;">Key configured</span>
+            </div>
+            <span style="font-size:12px; font-weight:700; color:#565F76; margin-top:10px;">User Name</span>
+            <input type="text" class="input-box" id="inputUserName" value="Boss">
+            <span style="font-size:12px; font-weight:700; color:var(--accent); margin-top:10px;">Assistant Name</span>
+            <input type="text" class="input-box" id="inputAssistantName" value="Jarvis" placeholder="Jarvis, Iris, Friday, etc.">
+            <div id="lblWakePhrasePreview" style="font-size:11.5px; font-weight:700; color:var(--accent); margin-top:2px; letter-spacing:0.02em;">Wake phrase: "Hello Jarvis"</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+              <span style="font-size:12px; font-weight:700; color:#565F76;">Preferred SIM for Calls</span>
+              <button id="btnToggleSimSlotMode" style="background:#0E111A; border:1px solid var(--border-subtle); color:var(--accent); font-size:10px; font-weight:800; border-radius:8px; padding:3px 8px; cursor:pointer;" title="Click to test single vs dual SIM">2 SIMs Detected</button>
+            </div>
+            <div id="boxSimSelector" style="display:flex; background:#07090F; border:1px solid var(--border-subtle); border-radius:14px; padding:3px; height:42px; margin-top:6px;">
+              <button id="btnSim1" class="voice-chip active" style="flex:1; border:none; border-radius:11px; padding:0; height:100%; display:flex; align-items:center; justify-content:center; cursor:pointer;">SIM 1 (Jio)</button>
+              <button id="btnSim2" class="voice-chip" style="flex:1; border:none; border-radius:11px; padding:0; height:100%; display:flex; align-items:center; justify-content:center; cursor:pointer;">SIM 2 (Airtel)</button>
+            </div>
+          </div>
+
+          <div class="section-label">VOICE &amp; INTELLIGENCE</div>
+          <div class="config-card">
+            <span style="font-size:12px; font-weight:700; color:var(--accent);">Jarvis Voices</span>
+            <div class="voice-chips-row" id="voiceChipsContainer">
+              <!-- Dynamically populated without visible scrollbar -->
+            </div>
+            
+            <span style="font-size:11.5px; font-weight:600; color:#565F76; margin-top:8px;">App Permissions</span>
+            <div class="theme-card" id="btnOpenPerms" style="background:#07090F; justify-content:space-between; padding:0 16px; height:50px; border-radius:14px; border:1px solid var(--border-subtle); display:flex; align-items:center; cursor:pointer;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <svg viewBox="0 0 24 24" style="fill:var(--accent); width:18px; height:18px;"><path d="M12,1L3,5v6c0,5.55 3.84,10.74 9,12 5.16,-1.26 9,-6.45 9,-12V5l-9,-4z"/></svg>
+                <span style="color:var(--accent); font-size:13px; font-weight:700;">System Access &amp; Permissions</span>
+              </div>
+              <span style="color:var(--accent); font-weight:800;">&gt;</span>
+            </div>
+          </div>
+
+          <div class="section-label">PERSONALITY MATRIX</div>
+          <div class="config-card">
+            <!-- 3-Way Sliding Segmented Control -->
+            <div class="personality-segmented-container" id="personalitySegmentContainer">
+              <div class="personality-slider-pill" id="personalitySliderPill"></div>
+              <div class="personality-tab active" id="btnPersonalityAssistant" data-personality="AI_ASSISTANT">
+                <svg viewBox="0 0 24 24"><path d="M9,21.5L10.5,15L17,13.5L10.5,12L9,5.5L7.5,12L1,13.5L7.5,15L9,21.5M19,10.5L20,6L24.5,5L20,4L19,-0.5L18,4L13.5,5L18,6L19,10.5Z"/></svg>
+                <span>AI ASSISTANT</span>
+              </div>
+              <div class="personality-tab" id="btnPersonalityGf" data-personality="GF">
+                <svg viewBox="0 0 24 24"><path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.28 2,8.5C2,5.42 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.09C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.42 22,8.5C22,12.28 18.6,15.36 13.45,20.04L12,21.35Z"/></svg>
+                <span>GF</span>
+              </div>
+              <div class="personality-tab" id="btnPersonalityProfessional" data-personality="PROFESSIONAL">
+                <svg viewBox="0 0 24 24"><path d="M20,6h-4V4c0,-1.11 -0.89,-2 -2,-2h-4c-1.11,0 -2,0.89 -2,2v2H4c-1.11,0 -1.99,0.89 -1.99,2L2,19c0,1.11 0.89,2 2,2h16c1.11,0 2,-0.9 2,-2V8c0,-1.11 -0.89,-2 -2,-2zm-6,0h-4V4h4v2z"/></svg>
+                <span>PROFESSIONAL</span>
+              </div>
+            </div>
+            <p id="lblPersonalityDesc" style="font-size:12px; color:#9BA3B8; font-style:italic; margin-top:14px; transition: opacity 0.2s ease;">
+              Your general-purpose Jarvis assistant for conversation, questions, and tasks.
+            </p>
+          </div>
+
+          <div class="section-label">APPEARANCE &amp; THEME</div>
+          <div class="config-card">
+            <!-- Sliding Segmented Control (3 Themes: Arc Blue, Amber Gold, Red) -->
+            <div class="theme-segmented-container" id="themeSegmentContainer">
+              <div class="theme-slider-pill" id="themeSliderPill"></div>
+              <div class="theme-tab active" id="btnThemeArcBlue">
+                <svg viewBox="0 0 24 24"><path d="M11,21h-1l1,-7H7.5c-0.88,0 -0.33,-0.75 -0.31,-0.78C8.48,10.94 10.42,7.54 13,3h1l-1,7h3.5c0.49,0 0.56,0.33 0.47,0.51C15.15,13.88 12.56,18.25 11,21z"/></svg>
+                <span>ARC BLUE</span>
+              </div>
+              <div class="theme-tab" id="btnThemeAmberGold">
+                <svg viewBox="0 0 24 24"><path d="M5,16L3,5l5.5,5L12,4l3.5,6L21,5l-2,11H5m14,3c0,0.55 -0.45,1 -1,1H6c-0.55,0 -1,-0.45 -1,-1v-1h14v1z"/></svg>
+                <span>AMBER GOLD</span>
+              </div>
+              <div class="theme-tab" id="btnThemeRed">
+                <svg viewBox="0 0 24 24"><path d="M13.5,0.67s0.74,2.65 0.74,4.8c0,2.06 -1.35,3.73 -3.41,3.73 -2.07,0 -3.63,-1.67 -3.63,-3.73l0.03,-0.36C5.21,7.51 4,10.61 4,14c0,4.42 3.58,8 8,8s8,-3.58 8,-8C20,8.61 17.41,3.8 13.5,0.67zM12,20c-3.31,0 -6,-2.69 -6,-6 0,-1.53 0.5,-3.06 1.45,-4.27 0.05,0.22 0.12,0.44 0.22,0.66 0.77,1.7 2.37,2.81 4.23,2.81 2.65,0 4.8,-2.15 4.8,-4.8 0,-0.66 -0.14,-1.28 -0.38,-1.85C17.38,8.23 18,10.97 18,14c0,3.31 -2.69,6 -6,6z"/></svg>
+                <span>RED</span>
+              </div>
+            </div>
+            <p id="lblThemeDesc" style="font-size:12px; color:#9BA3B8; font-style:italic; margin-top:14px; transition: opacity 0.2s ease;">
+              Arc Blue Theme (Electric Cyan &amp; Deep Space)
+            </p>
+          </div>
+
+          <!-- EXACT "SAVE & APPLY" BUTTON (Prominent, large touch target, press animation) -->
+          <button class="save-config-btn" id="btnSaveConfig">SAVE &amp; APPLY</button>
+
+          <p style="text-align:center; font-size:10.5px; color:#565F76; margin-top:22px; line-height:1.5;">
+            Continuous Voice Execution Engine • Android Voice Companion
+          </p>
+        </div>
+      </div>
+
+      <!-- PERMISSIONS SCREEN (Screenshot 2 - Real 4 Permissions, No Emojis) -->
+      <div class="screen-page" id="permsPage">
+        <div class="page-header">
+          <button class="icon-click" id="btnBackFromPerms"><svg viewBox="0 0 24 24" width="22" height="22" fill="#F4F4F6"><path d="M20,11H7.83l5.59,-5.59L12,4l-8,8 8,8 1.41,-1.41L7.83,13H20v-2z"/></svg></button>
+          <span class="page-title">Permissions &amp; Control</span>
+          <button class="dock-action-btn" id="btnSyncPerms" style="background:#0E121D; border:1px solid var(--border-subtle);">
+            <svg viewBox="0 0 24 24"><path d="M12,4V1L8,5l4,4V6c3.31,0 6,2.69 6,6 0,1.01 -0.25,1.97 -0.7,2.8l1.46,1.46C19.54,15.03 20,13.57 20,12c0,-4.42 -3.58,-8 -8,-8zm0,14c-3.31,0 -6,-2.69 -6,-6 0,-1.01 0.25,-1.97 0.7,-2.8L5.24,7.74C4.46,8.97 4,10.43 4,12c0,4.42 3.58,8 8,8v3l4,-4 -4,-4v3z"/></svg>
+            <span style="font-size:12px; color:var(--accent);">Sync</span>
+          </button>
+        </div>
+
+        <div class="scroll-body">
+          <div class="config-card" style="margin-top:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h3 style="font-size:15px; font-weight:800;">System Access Status</h3>
+                <p style="font-size:11.5px; color:#565F76; margin-top:2px;">Real permissions required for JARVIS</p>
+              </div>
+              <div class="perm-badge" id="lblPermCount">4 of 4 Granted</div>
+            </div>
+            <button class="save-config-btn" id="btnGrantAllPerms" style="margin-top:14px; height:48px; font-size:13.5px;">
+              Give All Permissions
+            </button>
+          </div>
+
+          <div id="permsCategorizedContainer" style="margin-top:12px;">
+            <!-- Categorized into 5 groups dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 3-STEP ONBOARDING SCREEN -->
+      <div class="screen-page" id="onboardingPage" style="z-index:180; padding-top:24px;">
+        <div style="padding:12px 20px 8px 20px; display:flex; justify-content:space-between; align-items:center;">
+          <span id="lblOnboardStepIndicator" style="font-size:11px; font-weight:800; color:var(--accent); letter-spacing:0.12em;">STEP 1 OF 3</span>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <div id="dotOb1" style="width:20px; height:4px; border-radius:2px; background:var(--accent);"></div>
+            <div id="dotOb2" style="width:8px; height:4px; border-radius:2px; background:#1F273B;"></div>
+            <div id="dotOb3" style="width:8px; height:4px; border-radius:2px; background:#1F273B;"></div>
+          </div>
+        </div>
+
+        <!-- STEP 1: WELCOME -->
+        <div id="stepOb1" class="scroll-body" style="padding-top:12px; align-items:center; text-align:center;">
+          <img src="app/src/main/res/drawable/ic_app_logo.png" style="width:88px; height:88px; border-radius:22px; box-shadow:0 8px 30px var(--accent-glow); margin-top:8px;" alt="Assistant Logo">
+          <h2 style="font-size:26px; font-weight:900; color:#F4F4F6; margin-top:14px; letter-spacing:0.04em;">Assistant</h2>
+          <span style="font-size:12px; font-weight:800; color:var(--accent); letter-spacing:0.08em; margin-top:2px;">POWERED BY JARVIS</span>
+          <p style="font-size:12px; color:#9BA3B8; line-height:1.5; margin-top:10px; max-width:90%;">
+            Your personal voice, vision, and real-time device assistant. Experience futuristic AI with native Android integration.
+          </p>
+
+          <div class="config-card" style="width:100%; text-align:left; margin-top:22px; gap:12px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="var(--accent)"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
+              <div>
+                <h4 style="font-size:13px; font-weight:700;">Real-Time Voice Assistant</h4>
+                <p style="font-size:11px; color:#565F76;">Bidirectional Gemini voice reasoning with natural speech.</p>
+              </div>
+            </div>
+            <div style="height:1px; background:var(--border-subtle);"></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="var(--accent)"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+              <div>
+                <h4 style="font-size:13px; font-weight:700;">Camera &amp; Screen Vision</h4>
+                <p style="font-size:11px; color:#565F76;">Floating camera analysis and full-screen visual inspection.</p>
+              </div>
+            </div>
+            <div style="height:1px; background:var(--border-subtle);"></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="var(--accent)"><path d="M11 21h-1l1-7H7.5c-.88 0-.33-.75-.31-.78C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51C15.15 13.88 12.56 18.25 11 21z"/></svg>
+              <div>
+                <h4 style="font-size:13px; font-weight:700;">System Actions &amp; Calling</h4>
+                <p style="font-size:11px; color:#565F76;">Dial contacts with SIM selection, launch WhatsApp, Spotify, YouTube.</p>
+              </div>
+            </div>
+          </div>
+
+          <button class="save-config-btn" id="btnObNext1" style="margin-top:24px;">CONTINUE</button>
+        </div>
+
+        <!-- STEP 2: PERMISSIONS -->
+        <div id="stepOb2" class="scroll-body" style="display:none; padding-top:12px;">
+          <h2 style="font-size:22px; font-weight:900; color:#F4F4F6;">System Access</h2>
+          <p style="font-size:12px; color:#9BA3B8; line-height:1.4; margin-top:4px;">
+            Grant essential permissions so Assistant can respond to your voice, use camera vision, and perform actions.
+          </p>
+
+          <div class="config-card" style="margin-top:16px; gap:8px;">
+            <div class="perm-row" id="obRowMic">
+              <div class="perm-info">
+                <h4>Microphone</h4>
+                <p>Live voice recognition &amp; wake phrase</p>
+              </div>
+              <div class="perm-badge" id="obBadgeMic">● GRANTED</div>
+            </div>
+            <div class="perm-row" id="obRowCam">
+              <div class="perm-info">
+                <h4>Camera</h4>
+                <p>Visual reasoning &amp; floating camera</p>
+              </div>
+              <div class="perm-badge" id="obBadgeCam">● GRANTED</div>
+            </div>
+            <div class="perm-row" id="obRowPhone">
+              <div class="perm-info">
+                <h4>Contacts &amp; Phone</h4>
+                <p>Voice dialing and SIM call initiation</p>
+              </div>
+              <div class="perm-badge" id="obBadgePhone">● GRANTED</div>
+            </div>
+            <div class="perm-row" id="obRowOverlay">
+              <div class="perm-info">
+                <h4>Display Over Other Apps</h4>
+                <p>Floating camera window &amp; vision HUD</p>
+              </div>
+              <div class="perm-badge" id="obBadgeOverlay">● GRANTED</div>
+            </div>
+          </div>
+
+          <button class="save-config-btn" id="btnObGrantAll" style="background:#0E121E; border:1px solid var(--accent); color:var(--accent); height:46px; font-size:13px; margin-top:16px;">
+            GRANT ALL PERMISSIONS
+          </button>
+          <button class="save-config-btn" id="btnObNext2" style="margin-top:12px;">CONTINUE</button>
+        </div>
+
+        <!-- STEP 3: CONNECT YOUR AI -->
+        <div id="stepOb3" class="scroll-body" style="display:none; padding-top:12px;">
+          <h2 style="font-size:22px; font-weight:900; color:#F4F4F6;">Connect Your AI</h2>
+          <p style="font-size:12px; color:#9BA3B8; line-height:1.4; margin-top:4px;">
+            Enter your Google Gemini API key to activate voice reasoning, vision capabilities, and device control.
+          </p>
+
+          <div class="config-card" style="margin-top:16px;">
+            <span style="font-size:11.5px; font-weight:800; color:var(--accent); letter-spacing:0.08em;">GEMINI API KEY</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="password" class="input-box" id="inputObApiKey" placeholder="Paste AI Studio API key (AIzaSy...)" style="flex:1;">
+              <button id="btnToggleObKeyEye" style="background:#07090F; border:1px solid var(--border-subtle); border-radius:14px; width:48px; height:48px; display:flex; align-items:center; justify-content:center; cursor:pointer; fill:#9BA3B8;">
+                <svg id="svgEyeIconOb" viewBox="0 0 24 24" width="20" height="20"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              </button>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+              <button id="btnObTestApi" style="background:transparent; border:1px solid var(--accent); color:var(--accent); font-weight:700; font-size:11px; border-radius:10px; padding:6px 12px; cursor:pointer; letter-spacing:0.04em;">TEST CONNECTION</button>
+              <span id="lblObTestStatus" style="font-size:11px; color:#565F76;">Ready to test</span>
+            </div>
+
+            <p style="font-size:11px; color:#565F76; margin-top:10px;">
+              Get your free key from Google AI Studio: <span style="color:var(--accent);">aistudio.google.com</span>
+            </p>
+          </div>
+
+          <button class="save-config-btn" id="btnObFinish" style="margin-top:24px;">SAVE &amp; LAUNCH ASSISTANT</button>
+        </div>
+      </div>
+
+      <!-- Unsaved Changes Confirmation Modal -->
+      <div class="drawer-overlay" id="unsavedModalOverlay" style="z-index: 120; display:none;"></div>
+      <div id="unsavedChangesModal" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:84%; background:#0E111A; border:1px solid var(--border-subtle); border-radius:20px; padding:22px; z-index:125; box-shadow:0 10px 40px rgba(0,0,0,0.85); text-align:center;">
+        <h3 style="font-size:16px; font-weight:800; color:#F4F4F6;">Unsaved Changes</h3>
+        <p style="font-size:12.5px; color:#9BA3B8; margin-top:8px; line-height:1.4;">You have unsaved configuration changes. Do you want to discard them?</p>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button id="btnDiscardChanges" style="flex:1; height:42px; background:#1C1418; border:1px solid #FF1744; color:#FF1744; font-weight:800; border-radius:12px; cursor:pointer; font-size:12px; letter-spacing:0.04em;">DISCARD</button>
+          <button id="btnKeepEditing" style="flex:1; height:42px; background:var(--chip-active-bg); border:none; color:#050507; font-weight:800; border-radius:12px; cursor:pointer; font-size:12px; letter-spacing:0.04em;">KEEP EDITING</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sim-guide">
+    <div>Swipe from <span>Left Edge</span> or tap <span>JARVIS title</span> for History Drawer</div>
+    <div>•</div>
+    <div>Tap <span>^ Chevron</span> for Camera/Vision dock</div>
+    <div>•</div>
+    <div>Drag <span>Floating Camera</span> across the screen</div>
+  </div>
+
+  <script>
+    // System State & Preferences
+    const STORAGE_KEY_CONFIG = 'jarvis_web_config';
+    const STORAGE_KEY_HISTORY = 'jarvis_web_chat_history';
+
+    let config = {
+      apiKey: '',
+      userName: 'Boss',
+      assistantName: 'Jarvis',
+      voice: 'Aoede',
+      personality: 'AI_ASSISTANT',
+      preferredSim: 'SIM 1',
+      theme: 'ARC_BLUE',
+      isBackgroundVoiceEnabled: false
+    };
+
+    let draftConfig = { ...config };
+
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_CONFIG);
+      if (saved) {
+        config = { ...config, ...JSON.parse(saved) };
+        if (!config.assistantName) config.assistantName = 'Jarvis';
+        draftConfig = { ...config };
+      }
+    } catch(e) {}
+
+    let permissionsState = {
+      MIC: true,
+      CAMERA: true,
+      CONTACTS: true,
+      PHONE: true,
+      NOTIFS: true,
+      LOCATION: true,
+      WEATHER: true,
+      A11Y: true,
+      BATTERY: true,
+      SCREEN: true,
+      OVERLAY: true,
+      BG_VOICE: false,
+      WAKE_WORD: false
+    };
+
+    let chatTurns = [
+      { user: "Jarvis, open WhatsApp.", jarvis: "WhatsApp open kar rahi hoon." },
+      { user: "Download PhonePe", jarvis: "PhonePe downloading in progress." }
+    ];
+
+    try {
+      const savedHist = localStorage.getItem(STORAGE_KEY_HISTORY);
+      if (savedHist) chatTurns = JSON.parse(savedHist);
+    } catch(e) {}
+
+    let isSessionOn = true;
+    let isMicMuted = false;
+    let isCameraActive = false;
+    let isScreenVisionActive = false;
+
+    // All Official Google Gemini Voices
+    const VOICES = ["Aoede", "Charon", "Fenrir", "Kore", "Puck", "Leda", "Orus", "Zephyr", "Vega", "Lyra", "Castor", "Pollux", "Oberon", "Chiron", "Pegasi"];
+
+    // 3D Gyroscope Canvas Simulation (Original geometry, rings, math preserved)
+    const canvas = document.getElementById('gyroCanvas');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    let width = 320, height = 320;
+    canvas.width = width * dpr; canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+
+    let currentState = 'idle';
+    let rotX = 0.35, rotY = 0, rotZ = 0, time = 0;
+    let audioLevel = 0.0;
+
+    const THEME_PRESETS = {
+      ARC_BLUE: {
+        idle: { speed: 0.008, glow: 0.6, color: [0, 242, 254], core: [100, 255, 218] },
+        background_listening: { speed: 0.009, glow: 0.65, color: [0, 242, 254], core: [79, 172, 254] },
+        wake_detected: { speed: 0.024, glow: 1.0, color: [0, 242, 254], core: [0, 255, 170] },
+        listening: { speed: 0.022, glow: 0.95, color: [0, 242, 254], core: [0, 255, 170] },
+        silent: { speed: 0.005, glow: 0.4, color: [0, 180, 216], core: [72, 202, 228] },
+        speaking: { speed: 0.025, glow: 1.0, color: [0, 210, 255], core: [79, 172, 254] },
+        executing: { speed: 0.028, glow: 0.95, color: [0, 210, 255], core: [100, 255, 218] },
+        vision_camera: { speed: 0.028, glow: 0.95, color: [0, 242, 254], core: [0, 210, 255] },
+        vision_screen: { speed: 0.032, glow: 1.0, color: [0, 210, 255], core: [255, 23, 68] },
+        muted: { speed: 0.004, glow: 0.35, color: [86, 95, 118], core: [86, 95, 118] },
+        offline: { speed: 0.001, glow: 0.15, color: [60, 68, 88], core: [60, 68, 88] }
+      },
+      AMBER_GOLD: {
+        idle: { speed: 0.008, glow: 0.65, color: [255, 215, 0], core: [255, 179, 0] },
+        background_listening: { speed: 0.009, glow: 0.65, color: [255, 215, 0], core: [255, 160, 0] },
+        wake_detected: { speed: 0.024, glow: 1.0, color: [255, 215, 0], core: [255, 235, 59] },
+        listening: { speed: 0.022, glow: 0.95, color: [255, 215, 0], core: [255, 235, 59] },
+        silent: { speed: 0.005, glow: 0.4, color: [200, 160, 40], core: [220, 180, 50] },
+        speaking: { speed: 0.025, glow: 1.0, color: [255, 223, 0], core: [255, 160, 0] },
+        executing: { speed: 0.028, glow: 0.95, color: [255, 215, 0], core: [255, 179, 0] },
+        vision_camera: { speed: 0.028, glow: 0.95, color: [255, 215, 0], core: [255, 179, 0] },
+        vision_screen: { speed: 0.032, glow: 1.0, color: [255, 179, 0], core: [255, 23, 68] },
+        muted: { speed: 0.004, glow: 0.35, color: [120, 100, 60], core: [100, 85, 50] },
+        offline: { speed: 0.001, glow: 0.15, color: [60, 50, 35], core: [50, 40, 30] }
+      },
+      RED: {
+        idle: { speed: 0.008, glow: 0.65, color: [255, 23, 68], core: [255, 80, 100] },
+        background_listening: { speed: 0.009, glow: 0.65, color: [255, 23, 68], core: [255, 42, 77] },
+        wake_detected: { speed: 0.024, glow: 1.0, color: [255, 23, 68], core: [255, 110, 130] },
+        listening: { speed: 0.022, glow: 0.95, color: [255, 23, 68], core: [255, 110, 130] },
+        silent: { speed: 0.005, glow: 0.4, color: [180, 40, 60], core: [200, 50, 70] },
+        speaking: { speed: 0.025, glow: 1.0, color: [255, 42, 77], core: [255, 23, 68] },
+        executing: { speed: 0.028, glow: 0.95, color: [255, 42, 77], core: [255, 80, 100] },
+        vision_camera: { speed: 0.028, glow: 0.95, color: [255, 23, 68], core: [255, 42, 77] },
+        vision_screen: { speed: 0.032, glow: 1.0, color: [255, 42, 77], core: [255, 90, 110] },
+        muted: { speed: 0.004, glow: 0.35, color: [110, 35, 45], core: [90, 25, 35] },
+        offline: { speed: 0.001, glow: 0.15, color: [55, 20, 25], core: [45, 15, 20] }
+      }
+    };
+
+    function renderOrb() {
+      ctx.clearRect(0, 0, width, height);
+      const presets = THEME_PRESETS[config.theme] || THEME_PRESETS.ARC_BLUE;
+      const cur = presets[currentState] || presets.idle;
+
+      time += cur.speed;
+      rotY += cur.speed * 1.5;
+      rotX += cur.speed * 0.8;
+
+      const cx = width / 2;
+      const cy = height / 2;
+      const baseR = 70 + audioLevel * 30;
+
+      // Outer Glow
+      const grad = ctx.createRadialGradient(cx, cy, 20, cx, cy, baseR * 1.6);
+      grad.addColorStop(0, `rgba(${cur.core[0]}, ${cur.core[1]}, ${cur.core[2]}, ${cur.glow * 0.45})`);
+      grad.addColorStop(0.5, `rgba(${cur.color[0]}, ${cur.color[1]}, ${cur.color[2]}, ${cur.glow * 0.2})`);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, baseR * 1.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Gyroscope 3D Rings
+      for (let r = 0; r < 4; r++) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(time * (r % 2 === 0 ? 1 : -1) + r * 0.8);
+        ctx.beginPath();
+        const rx = baseR * (0.85 + r * 0.12);
+        const ry = rx * Math.cos(rotX + r * 0.5);
+        ctx.ellipse(0, 0, rx, Math.abs(ry) + 2, rotY * 0.5, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(${cur.color[0]}, ${cur.color[1]}, ${cur.color[2]}, ${0.45 + r * 0.15})`;
+        ctx.lineWidth = 2.0;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Core Orb
+      const coreGrad = ctx.createRadialGradient(cx, cy, 4, cx, cy, 32);
+      coreGrad.addColorStop(0, `rgba(255,255,255,0.95)`);
+      coreGrad.addColorStop(0.4, `rgba(${cur.core[0]}, ${cur.core[1]}, ${cur.core[2]}, 0.9)`);
+      coreGrad.addColorStop(1, `rgba(${cur.color[0]}, ${cur.color[1]}, ${cur.color[2]}, 0)`);
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 32, 0, Math.PI * 2);
+      ctx.fill();
+
+      requestAnimationFrame(renderOrb);
+    }
+    renderOrb();
+
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toTimeString().substring(0, 5);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Theme Application with Sliding Indicator
+    function applyTheme(themeName) {
+      config.theme = themeName;
+      document.body.setAttribute('data-theme', themeName);
+
+      const sliderPill = document.getElementById('themeSliderPill');
+      const tabArcBlue = document.getElementById('btnThemeArcBlue');
+      const tabAmberGold = document.getElementById('btnThemeAmberGold');
+      const tabRed = document.getElementById('btnThemeRed');
+
+      document.body.classList.remove('gold-mode', 'red-mode');
+      if (tabArcBlue) tabArcBlue.classList.remove('active');
+      if (tabAmberGold) tabAmberGold.classList.remove('active');
+      if (tabRed) tabRed.classList.remove('active');
+
+      if (themeName === 'RED') {
+        document.body.classList.add('red-mode');
+        if (tabRed) tabRed.classList.add('active');
+        if (sliderPill) sliderPill.style.transform = 'translateX(200%)';
+        const desc = document.getElementById('lblThemeDesc');
+        if (desc) desc.textContent = 'Red Theme (Electric Red & Deep Space Obsidian)';
+      } else if (themeName === 'AMBER_GOLD') {
+        document.body.classList.add('gold-mode');
+        if (tabAmberGold) tabAmberGold.classList.add('active');
+        if (sliderPill) sliderPill.style.transform = 'translateX(100%)';
+        const desc = document.getElementById('lblThemeDesc');
+        if (desc) desc.textContent = 'Amber Gold Theme (Warm Golden Holographic Obsidian)';
+      } else {
+        if (tabArcBlue) tabArcBlue.classList.add('active');
+        if (sliderPill) sliderPill.style.transform = 'translateX(0%)';
+        const desc = document.getElementById('lblThemeDesc');
+        if (desc) desc.textContent = 'Arc Blue Theme (Electric Cyan & Deep Space)';
+      }
+    }
+    applyTheme(config.theme);
+
+    // Left-Swipe History Drawer Gesture Logic
+    const historyDrawer = document.getElementById('historyDrawer');
+    const drawerOverlay = document.getElementById('drawerOverlay');
+    const phoneScreen = document.getElementById('phoneScreen');
+
+    let isDraggingDrawer = false;
+    let startTouchX = 0;
+
+    function openHistoryDrawer() {
+      historyDrawer.classList.remove('dragging');
+      historyDrawer.classList.add('open');
+      drawerOverlay.classList.add('active');
+      renderChatHistory();
+    }
+
+    function closeHistoryDrawer() {
+      historyDrawer.classList.remove('dragging');
+      historyDrawer.classList.remove('open');
+      historyDrawer.style.transform = '';
+      drawerOverlay.classList.remove('active');
+    }
+
+    document.getElementById('btnHeaderHistory').addEventListener('click', openHistoryDrawer);
+    document.getElementById('btnCloseHist').addEventListener('click', closeHistoryDrawer);
+    drawerOverlay.addEventListener('click', closeHistoryDrawer);
+
+    // Edge Swipe Detection (Pointer / Touch)
+    function onPointerDown(e) {
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const rect = phoneScreen.getBoundingClientRect();
+      const relativeX = clientX - rect.left;
+
+      if (relativeX <= 36 || historyDrawer.classList.contains('open')) {
+        isDraggingDrawer = true;
+        startTouchX = relativeX;
+        historyDrawer.classList.add('dragging');
+      }
+    }
+
+    function onPointerMove(e) {
+      if (!isDraggingDrawer) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const rect = phoneScreen.getBoundingClientRect();
+      const relativeX = clientX - rect.left;
+
+      let offset = relativeX - startTouchX;
+      if (!historyDrawer.classList.contains('open')) {
+        let tx = Math.min(0, -310 + offset);
+        historyDrawer.style.transform = `translateX(${tx}px)`;
+        drawerOverlay.classList.add('active');
+      } else {
+        let tx = Math.min(0, offset);
+        historyDrawer.style.transform = `translateX(${tx}px)`;
+      }
+    }
+
+    function onPointerUp(e) {
+      if (!isDraggingDrawer) return;
+      isDraggingDrawer = false;
+      historyDrawer.classList.remove('dragging');
+
+      const style = window.getComputedStyle(historyDrawer);
+      const matrix = new DOMMatrixReadOnly(style.transform);
+      const currentX = matrix.m41;
+
+      if (currentX > -180) {
+        openHistoryDrawer();
+      } else {
+        closeHistoryDrawer();
+      }
+    }
+
+    phoneScreen.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+
+    phoneScreen.addEventListener('touchstart', onPointerDown, { passive: true });
+    window.addEventListener('touchmove', onPointerMove, { passive: true });
+    window.addEventListener('touchend', onPointerUp);
+
+    // Chat History Rendering & Persistence
+    function renderChatHistory() {
+      const container = document.getElementById('drawerChatList');
+      container.innerHTML = '';
+      chatTurns.forEach(turn => {
+        if (turn.user) {
+          const u = document.createElement('div');
+          u.className = 'bubble-user';
+          u.textContent = turn.user;
+          container.appendChild(u);
+        }
+        if (turn.jarvis) {
+          const j = document.createElement('div');
+          j.className = 'bubble-jarvis';
+          j.textContent = turn.jarvis;
+          container.appendChild(j);
+        }
+      });
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Conversation Lifecycle State Machine
+    let conversationLifecycle = 'ACTIVE'; // 'ACTIVE', 'SILENT', 'ENDED'
+    let silenceTimer = null;
+    let silentTimeoutTimer = null;
+
+    function resetSilenceTimer() {
+      clearTimeout(silenceTimer);
+      clearTimeout(silentTimeoutTimer);
+      if (!isSessionOn || isMicMuted || conversationLifecycle === 'ENDED') return;
+
+      silenceTimer = setTimeout(() => {
+        enterSilentMode();
+      }, 30000); // 30 seconds of inactivity
+    }
+
+    function enterSilentMode() {
+      if (!isSessionOn || isMicMuted || conversationLifecycle === 'ENDED') return;
+      conversationLifecycle = 'SILENT';
+      currentState = 'silent';
+      updateSystemStateUi();
+
+      const asstName = config.assistantName || 'Jarvis';
+      const userName = config.userName || 'Boss';
+      const speech = `${userName}, I am going into silent mode. If you need me, just say, 'Hello ${asstName}.'`;
+      
+      chatTurns.push({ user: null, jarvis: speech });
+      localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(chatTurns));
+      renderChatHistory();
+
+      // Start 2-minute timeout for session ending
+      clearTimeout(silentTimeoutTimer);
+      silentTimeoutTimer = setTimeout(() => {
+        endSessionAfterSilentTimeout();
+      }, 120000); // 2 minutes
+    }
+
+    function endSessionAfterSilentTimeout() {
+      if (conversationLifecycle !== 'SILENT') return;
+      const userName = config.userName || 'Boss';
+      chatTurns.push({ user: null, jarvis: `Bye, ${userName}.` });
+      localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(chatTurns));
+      renderChatHistory();
+      endSessionInternal();
+    }
+
+    function endSessionInternal() {
+      clearTimeout(silenceTimer);
+      clearTimeout(silentTimeoutTimer);
+      conversationLifecycle = 'ENDED';
+      currentState = 'offline';
+      updateSystemStateUi();
+    }
+
+    function wakeFromSilentMode() {
+      clearTimeout(silentTimeoutTimer);
+      conversationLifecycle = 'ACTIVE';
+      currentState = 'wake_detected';
+      updateSystemStateUi();
+
+      const userName = config.userName || 'Boss';
+      setTimeout(() => {
+        if (conversationLifecycle === 'ACTIVE' && isSessionOn && !isMicMuted) {
+          currentState = 'listening';
+          setTimeout(() => {
+            if (currentState === 'listening') currentState = 'idle';
+            resetSilenceTimer();
+          }, 1500);
+        }
+      }, 1200);
+    }
+
+    // Start initial 30s silence timer
+    resetSilenceTimer();
+
+    document.getElementById('btnSendChat').addEventListener('click', () => {
+      const input = document.getElementById('inputChatText');
+      const text = input.value.trim();
+      if (!text) return;
+      
+      const lower = text.toLowerCase();
+      const userName = config.userName || 'Boss';
+      const asstName = config.assistantName || 'Jarvis';
+      const asstLower = asstName.toLowerCase();
+      let defaultReply = '';
+
+      // Check for bye/goodbye session end commands
+      if (lower === 'bye' || lower === 'goodbye' || lower === 'bye ' + asstLower || lower === 'goodbye ' + asstLower || lower === 'bye boss') {
+        chatTurns.push({ user: text, jarvis: `Bye, ${userName}.` });
+        localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(chatTurns));
+        input.value = '';
+        renderChatHistory();
+        endSessionInternal();
+        return;
+      }
+
+      // If session is ended: wake words MUST NOT work!
+      if (conversationLifecycle === 'ENDED') {
+        chatTurns.push({ user: text, jarvis: `(Session is ended. Tap the power button below to start a new session.)` });
+        localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(chatTurns));
+        input.value = '';
+        renderChatHistory();
+        return;
+      }
+
+      // If in SILENT MODE:
+      if (conversationLifecycle === 'SILENT') {
+        const isWake = lower === 'hello ' + asstLower ||
+                       lower === 'hey ' + asstLower ||
+                       lower === 'ok ' + asstLower ||
+                       lower === asstLower ||
+                       lower === 'hello jarvis' ||
+                       lower === 'hey jarvis';
+        if (isWake) {
+          chatTurns.push({ user: text, jarvis: `Yes, ${userName}?` });
+          localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(chatTurns));
+          input.value = '';
+          renderChatHistory();
+          wakeFromSilentMode();
+          return;
+        } else {
+          // Normal message wakes assistant from silent mode
+          conversationLifecycle = 'ACTIVE';
+        }
+      }
+
+      // Active mode wake word detection
+      if (lower === 'hello ' + asstLower || lower === 'hey ' + asstLower || lower === 'ok ' + asstLower || lower === asstLower || lower === 'hello jarvis' || lower === 'hey jarvis') {
+        defaultReply = `Yes, ${userName}.`;
+        currentState = 'wake_detected';
+        setTimeout(() => { currentState = 'listening'; }, 1200);
+      } else if (lower.includes('open whatsapp')) {
+        defaultReply = 'Opening WhatsApp, Boss.';
+        currentState = 'executing';
+        setTimeout(() => { currentState = 'idle'; }, 1500);
+      } else if (lower.includes('spotify') || lower.includes('play music')) {
+        defaultReply = 'Sure, Boss. Playing your music on Spotify.';
+        currentState = 'executing';
+        setTimeout(() => { currentState = 'idle'; }, 1500);
+      } else if (lower.includes('message') || lower.includes('text')) {
+        defaultReply = "I've prepared the message to Rahul: 'I\'ll be late'. Ready to send. Should I send it?";
+        currentState = 'speaking';
+        setTimeout(() => { currentState = 'listening'; }, 1500);
+      } else if (lower === 'yes' || lower === 'send' || lower === 'send it') {
+        defaultReply = 'Sending message to Rahul, Boss.';
+        currentState = 'executing';
+        setTimeout(() => { currentState = 'idle'; }, 1500);
+      } else if (lower.includes('scroll down')) {
+        defaultReply = 'Scrolled down, Boss.';
+        currentState = 'executing';
+        setTimeout(() => { currentState = 'idle'; }, 1500);
+      } else if (lower.includes('screen') || lower.includes('look at my screen')) {
+        defaultReply = 'Analyzing screen content via screen vision, Boss.';
+        currentState = 'vision_screen';
+        setTimeout(() => { currentState = 'idle'; }, 2000);
+      } else if (lower.includes('weather') || lower.includes('forecast') || lower.includes('temperature') || lower.includes('rain')) {
+        if (!permissionsState.LOCATION) {
+          defaultReply = "Boss, Location permission is required to fetch your local weather. Please grant it in Permissions & Control.";
+        } else {
+          defaultReply = "The current local weather is 24°C and clear with calm conditions, Boss.";
+        }
+        currentState = 'speaking';
+        setTimeout(() => { currentState = 'idle'; }, 1500);
+      } else if (lower.startsWith('call ') || lower.startsWith('dial ')) {
+        const contact = text.replace(/^call /i, '').replace(/^dial /i, '').trim() || 'contact';
+        if (!permissionsState.PHONE) {
+          defaultReply = "Boss, Phone Call permission is required to make calls. Please grant it in Permissions & Control.";
+        } else {
+          defaultReply = `Calling ${contact} using ${config.preferredSim || 'SIM 1'}, Boss.`;
+        }
+        currentState = 'executing';
+        setTimeout(() => { currentState = 'idle'; }, 1500);
+      } else if (config.personality === 'GF') {
+        if (lower.includes('tired')) {
+          defaultReply = "Aww, then take it a little easy today na. You've been pushing yourself way too hard. ❤️";
+        } else if (lower.includes('doing')) {
+          defaultReply = "Just hanging around here waiting for you! What are you up to?";
+        } else if (lower.includes('day')) {
+          defaultReply = "Arey, my day is always better when I'm talking with you! How was yours, thak gaye kya?";
+        } else {
+          defaultReply = `Haan ${userName}, main sun rahi hoon na. Hamesha aapke saath hoon.`;
+        }
+      } else if (config.personality === 'PROFESSIONAL') {
+        if (lower.includes('explain') || lower.includes('error')) {
+          defaultReply = "Analysis indicates nominal execution with the following parameters:\n1. Verify system configuration\n2. Maintain process integrity\n3. Execute required protocol.";
+        } else if (lower.includes('day')) {
+          defaultReply = "All systems are operating at nominal capacity. Ready to proceed with scheduled tasks and queries.";
+        } else if (lower.includes('tired')) {
+          defaultReply = "Acknowledged. I recommend taking rest to maintain optimal performance. Pending tasks can be deferred.";
+        } else {
+          defaultReply = "Instruction acknowledged. Processing request under executive guidelines.";
+        }
+      } else { // AI_ASSISTANT
+        if (lower.includes('weather')) {
+          defaultReply = "I'll check the latest weather report for you right away.";
+        } else if (lower.includes('day')) {
+          defaultReply = `It's been a productive day assisting you, ${userName}! Ready for anything you need.`;
+        } else if (lower.includes('ram')) {
+          defaultReply = "RAM is the short-term working memory of your device that holds active data for fast processor access.";
+        } else if (lower.includes('tired')) {
+          defaultReply = `Make sure to get adequate rest, ${userName}. Let me know if you need me to set an alarm or handle anything.`;
+        } else {
+          defaultReply = `Online and ready, ${userName}. Processing your request.`;
+        }
+      }
+
+      chatTurns.push({ user: text, jarvis: defaultReply });
+      localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(chatTurns));
+      input.value = '';
+      renderChatHistory();
+
+      // Reset the 30-second silence timer after query completes
+      resetSilenceTimer();
+    });
+
+    document.getElementById('btnClearHist').addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear conversation history?')) {
+        chatTurns = [];
+        localStorage.removeItem(STORAGE_KEY_HISTORY);
+        renderChatHistory();
+      }
+    });
+
+    // Draggable Floating Camera Logic
+    const floatingCamera = document.getElementById('floatingCamera');
+    const dragHandle = document.getElementById('cameraDragHandle');
+    let isDraggingCam = false;
+    let camStartX = 0, camStartY = 0, camElemX = 0, camElemY = 0;
+
+    dragHandle.addEventListener('mousedown', (e) => {
+      isDraggingCam = true;
+      camStartX = e.clientX;
+      camStartY = e.clientY;
+      camElemX = floatingCamera.offsetLeft;
+      camElemY = floatingCamera.offsetTop;
+      e.stopPropagation();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDraggingCam) return;
+      const dx = e.clientX - camStartX;
+      const dy = e.clientY - camStartY;
+
+      const screenW = phoneScreen.clientWidth;
+      const screenH = phoneScreen.clientHeight;
+      const cardW = floatingCamera.offsetWidth;
+      const cardH = floatingCamera.offsetHeight;
+
+      const newX = Math.max(8, Math.min(screenW - cardW - 8, camElemX + dx));
+      const newY = Math.max(48, Math.min(screenH - cardH - 90, camElemY + dy));
+
+      floatingCamera.style.left = `${newX}px`;
+      floatingCamera.style.top = `${newY}px`;
+    });
+
+    window.addEventListener('mouseup', () => { isDraggingCam = false; });
+
+    // Open/Close Camera
+    let cameraStream = null;
+    async function openCamera() {
+      floatingCamera.classList.add('active');
+      isCameraActive = true;
+      currentState = 'vision_camera';
+      updateSystemStateUi();
+
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        document.getElementById('liveVideoFeed').srcObject = cameraStream;
+      } catch (err) {}
+    }
+
+    function closeCamera() {
+      floatingCamera.classList.remove('active');
+      isCameraActive = false;
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+      }
+      currentState = isSessionOn ? 'idle' : 'offline';
+      updateSystemStateUi();
+    }
+
+    document.getElementById('btnOpenRealCamera').addEventListener('click', () => {
+      document.getElementById('visionDock').classList.remove('visible');
+      openCamera();
+    });
+
+    document.getElementById('btnCloseCam').addEventListener('click', closeCamera);
+
+    document.getElementById('btnTorch').addEventListener('click', function() {
+      this.classList.toggle('active');
+    });
+
+    // Screen Vision Mode
+    const screenVisionBanner = document.getElementById('screenVisionBanner');
+    document.getElementById('btnOpenScreenVision').addEventListener('click', () => {
+      document.getElementById('visionDock').classList.remove('visible');
+      if (confirm('JARVIS requires explicit permission to observe your screen for AI visual analysis. Allow screen capture?')) {
+        isScreenVisionActive = true;
+        screenVisionBanner.classList.add('active');
+        currentState = 'vision_screen';
+        updateSystemStateUi();
+      }
+    });
+
+    document.getElementById('btnStopVision').addEventListener('click', () => {
+      isScreenVisionActive = false;
+      screenVisionBanner.classList.remove('active');
+      currentState = isSessionOn ? 'idle' : 'offline';
+      updateSystemStateUi();
+    });
+
+    // Dock Toggle
+    document.getElementById('btnChevronToggle').addEventListener('click', () => {
+      document.getElementById('visionDock').classList.toggle('visible');
+    });
+
+    // Mic and Power
+    document.getElementById('btnMic').addEventListener('click', () => {
+      isMicMuted = !isMicMuted;
+      document.getElementById('btnMic').classList.toggle('muted', isMicMuted);
+      if (isMicMuted) {
+        clearTimeout(silenceTimer);
+        clearTimeout(silentTimeoutTimer);
+        currentState = 'muted';
+      } else {
+        if (conversationLifecycle === 'ACTIVE' && isSessionOn) {
+          currentState = 'idle';
+          resetSilenceTimer();
+        } else if (conversationLifecycle === 'SILENT') {
+          currentState = 'silent';
+          clearTimeout(silentTimeoutTimer);
+          silentTimeoutTimer = setTimeout(endSessionAfterSilentTimeout, 120000);
+        } else if (conversationLifecycle === 'ENDED') {
+          currentState = 'offline';
+        }
+      }
+      updateSystemStateUi();
+    });
+
+    document.getElementById('btnPower').addEventListener('click', () => {
+      if (!isSessionOn || conversationLifecycle === 'ENDED') {
+        isSessionOn = true;
+        conversationLifecycle = 'ACTIVE';
+        document.getElementById('btnPower').classList.add('active');
+        currentState = isMicMuted ? 'muted' : 'idle';
+        if (!isMicMuted) resetSilenceTimer();
+      } else {
+        isSessionOn = false;
+        document.getElementById('btnPower').classList.remove('active');
+        closeCamera();
+        isScreenVisionActive = false;
+        screenVisionBanner.classList.remove('active');
+        endSessionInternal();
+      }
+      updateSystemStateUi();
+    });
+
+    function updateSystemStateUi() {
+      const lbl = document.getElementById('statusLabel');
+      const dot = document.getElementById('statusDot');
+
+      dot.className = 'status-dot';
+      if (!isSessionOn) {
+        lbl.textContent = 'Offline';
+        dot.classList.add('muted');
+      } else if (conversationLifecycle === 'ENDED') {
+        lbl.textContent = 'Session Ended';
+        dot.classList.add('muted');
+      } else if (isScreenVisionActive) {
+        lbl.textContent = 'Vision Active';
+        dot.classList.add('red');
+      } else if (isCameraActive) {
+        lbl.textContent = 'Camera Active';
+        dot.classList.add('active');
+      } else if (isMicMuted) {
+        lbl.textContent = 'Muted';
+        dot.classList.add('red');
+      } else if (conversationLifecycle === 'SILENT') {
+        lbl.textContent = 'Silent Mode';
+        dot.classList.add('amber');
+      } else {
+        lbl.textContent = 'Speak';
+        dot.classList.add('active');
+      }
+    }
+
+    // Navigation to Settings & Permissions
+    function hasUnsavedChanges() {
+      const currentApiKey = document.getElementById('inputApiKey').value.trim();
+      const currentUserName = document.getElementById('inputUserName').value.trim() || 'Boss';
+      const currentAssistantName = document.getElementById('inputAssistantName')?.value.trim() || 'Jarvis';
+      return currentApiKey !== config.apiKey ||
+             currentUserName !== config.userName ||
+             currentAssistantName !== (config.assistantName || 'Jarvis') ||
+             draftConfig.voice !== config.voice ||
+             draftConfig.personality !== config.personality ||
+             draftConfig.theme !== config.theme ||
+             draftConfig.preferredSim !== config.preferredSim;
+    }
+
+    document.getElementById('btnOpenConfig').addEventListener('click', () => {
+      draftConfig = { ...config };
+      document.getElementById('settingsPage').classList.add('active');
+      loadSettingsUi();
+    });
+
+    document.getElementById('btnBackFromSettings').addEventListener('click', () => {
+      if (hasUnsavedChanges()) {
+        document.getElementById('unsavedModalOverlay').style.display = 'block';
+        document.getElementById('unsavedChangesModal').style.display = 'block';
+      } else {
+        document.getElementById('settingsPage').classList.remove('active');
+      }
+    });
+
+    document.getElementById('btnDiscardChanges').addEventListener('click', () => {
+      draftConfig = { ...config };
+      applyTheme(config.theme);
+      document.getElementById('unsavedModalOverlay').style.display = 'none';
+      document.getElementById('unsavedChangesModal').style.display = 'none';
+      document.getElementById('settingsPage').classList.remove('active');
+    });
+
+    document.getElementById('btnKeepEditing').addEventListener('click', () => {
+      document.getElementById('unsavedModalOverlay').style.display = 'none';
+      document.getElementById('unsavedChangesModal').style.display = 'none';
+    });
+
+    document.getElementById('btnOpenPerms').addEventListener('click', () => {
+      document.getElementById('permsPage').classList.add('active');
+      renderPermissionsUi();
+    });
+
+    document.getElementById('btnBackFromPerms').addEventListener('click', () => {
+      document.getElementById('permsPage').classList.remove('active');
+    });
+
+    function updateWakePreview() {
+      const inputAsst = document.getElementById('inputAssistantName');
+      const name = (inputAsst ? inputAsst.value.trim() : '') || draftConfig.assistantName || 'Jarvis';
+      const preview = document.getElementById('lblWakePhrasePreview');
+      if (preview) preview.textContent = `Wake phrase: "Hello ${name}"`;
+      const configWake = document.getElementById('lblConfigWakeWord');
+      if (configWake) configWake.textContent = `Hello ${name}`;
+    }
+
+    const inputAsstEl = document.getElementById('inputAssistantName');
+    if (inputAsstEl) {
+      inputAsstEl.addEventListener('input', updateWakePreview);
+    }
+
+    function updateBgServiceStatusUi() {
+      const lblBg = document.getElementById('lblBgServiceStatus');
+      if (!lblBg) return;
+      if (!permissionsState.MIC) {
+        lblBg.textContent = '● REQUIRES PERMISSION';
+        lblBg.style.color = 'var(--status-amber)';
+      } else if (draftConfig.isBackgroundVoiceEnabled) {
+        lblBg.textContent = '● ACTIVE';
+        lblBg.style.color = 'var(--status-green)';
+      } else {
+        lblBg.textContent = '● OFF';
+        lblBg.style.color = 'var(--status-red)';
+      }
+    }
+
+    // Populate Settings UI
+    function loadSettingsUi() {
+      document.getElementById('inputApiKey').value = draftConfig.apiKey;
+      document.getElementById('inputUserName').value = draftConfig.userName;
+      const inputAsst = document.getElementById('inputAssistantName');
+      if (inputAsst) {
+        inputAsst.value = draftConfig.assistantName || 'Jarvis';
+      }
+      updateWakePreview();
+
+      // Preferred SIM UI
+      updateSimUi();
+
+      // Voices
+      const vc = document.getElementById('voiceChipsContainer');
+      vc.innerHTML = '';
+      VOICES.forEach(v => {
+        const chip = document.createElement('div');
+        chip.className = `voice-chip ${draftConfig.voice === v ? 'active' : ''}`;
+        chip.textContent = v;
+        chip.onclick = () => {
+          draftConfig.voice = v;
+          loadSettingsUi();
+        };
+        vc.appendChild(chip);
+      });
+
+      // 3-Way Sliding Personality Control
+      const personalityPill = document.getElementById('personalitySliderPill');
+      const descMap = {
+        AI_ASSISTANT: 'Your general-purpose Jarvis assistant for conversation, questions, and tasks.',
+        GF: 'A warm, playful and caring conversational personality.',
+        PROFESSIONAL: 'A focused, formal and efficient personality for work and productivity.'
+      };
+
+      const modes = ['AI_ASSISTANT', 'GF', 'PROFESSIONAL'];
+      let activeIndex = modes.indexOf(draftConfig.personality);
+      if (activeIndex === -1) activeIndex = 0;
+
+      if (personalityPill) {
+        personalityPill.style.transform = `translateX(${activeIndex * 100}%)`;
+      }
+
+      document.querySelectorAll('.personality-tab').forEach(tab => {
+        const isSelected = tab.dataset.personality === draftConfig.personality;
+        tab.classList.toggle('active', isSelected);
+        tab.onclick = () => {
+          draftConfig.personality = tab.dataset.personality;
+          const descEl = document.getElementById('lblPersonalityDesc');
+          descEl.style.opacity = '0';
+          setTimeout(() => {
+            descEl.textContent = descMap[draftConfig.personality] || descMap.AI_ASSISTANT;
+            descEl.style.opacity = '1';
+          }, 120);
+          loadSettingsUi();
+        };
+      });
+      document.getElementById('lblPersonalityDesc').textContent = descMap[draftConfig.personality] || descMap.AI_ASSISTANT;
+
+      // Background Voice
+      const chkBg = document.getElementById('chkBackgroundVoice');
+      if (chkBg) {
+        chkBg.checked = !!draftConfig.isBackgroundVoiceEnabled;
+        chkBg.onchange = () => {
+          draftConfig.isBackgroundVoiceEnabled = chkBg.checked;
+          updateBgServiceStatusUi();
+        };
+      }
+      updateBgServiceStatusUi();
+
+      applyTheme(draftConfig.theme);
+    }
+
+    // Dynamic SIM Detection (1 SIM vs 2 SIMs)
+    let simSlotCount = 2;
+    function updateSimUi() {
+      const btnSim1 = document.getElementById('btnSim1');
+      const btnSim2 = document.getElementById('btnSim2');
+      const toggleBtn = document.getElementById('btnToggleSimSlotMode');
+      if (!btnSim1 || !btnSim2) return;
+
+      if (simSlotCount === 1) {
+        btnSim1.style.display = 'flex';
+        btnSim2.style.display = 'none';
+        btnSim1.className = 'voice-chip active';
+        btnSim1.textContent = 'SIM 1 (Jio)';
+        draftConfig.preferredSim = 'SIM 1';
+        if (toggleBtn) toggleBtn.textContent = '1 SIM Detected';
+      } else {
+        btnSim1.style.display = 'flex';
+        btnSim2.style.display = 'flex';
+        const isSim1 = draftConfig.preferredSim === 'SIM 1';
+        btnSim1.className = `voice-chip ${isSim1 ? 'active' : ''}`;
+        btnSim2.className = `voice-chip ${!isSim1 ? 'active' : ''}`;
+        btnSim1.textContent = 'SIM 1 (Jio)';
+        btnSim2.textContent = 'SIM 2 (Airtel)';
+        if (toggleBtn) toggleBtn.textContent = '2 SIMs Detected';
+      }
+    }
+
+    const btnToggleSim = document.getElementById('btnToggleSimSlotMode');
+    if (btnToggleSim) {
+      btnToggleSim.addEventListener('click', () => {
+        simSlotCount = simSlotCount === 2 ? 1 : 2;
+        updateSimUi();
+      });
+    }
+
+    document.getElementById('btnSim1').addEventListener('click', () => {
+      draftConfig.preferredSim = 'SIM 1';
+      updateSimUi();
+    });
+
+    document.getElementById('btnSim2').addEventListener('click', () => {
+      draftConfig.preferredSim = 'SIM 2';
+      updateSimUi();
+    });
+
+    // Eye toggle for API key in Settings
+    const btnToggleKeyEye = document.getElementById('btnToggleSettingsKeyEye');
+    if (btnToggleKeyEye) {
+      btnToggleKeyEye.addEventListener('click', () => {
+        const inp = document.getElementById('inputApiKey');
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+      });
+    }
+
+    // Test API Connection in Settings
+    const btnTestConfigKey = document.getElementById('btnTestConfigApiKey');
+    if (btnTestConfigKey) {
+      btnTestConfigKey.addEventListener('click', () => {
+        const key = document.getElementById('inputApiKey').value.trim();
+        const lblStatus = document.getElementById('lblConfigApiTestStatus');
+        if (!key) {
+          lblStatus.textContent = 'Enter key first';
+          lblStatus.style.color = 'var(--status-red)';
+          return;
+        }
+        lblStatus.textContent = 'Testing connection...';
+        lblStatus.style.color = 'var(--accent)';
+        setTimeout(() => {
+          lblStatus.textContent = '● Connected & Active';
+          lblStatus.style.color = 'var(--status-green)';
+        }, 600);
+      });
+    }
+
+    document.getElementById('btnThemeArcBlue').addEventListener('click', () => {
+      draftConfig.theme = 'ARC_BLUE';
+      applyTheme('ARC_BLUE');
+      loadSettingsUi();
+    });
+    document.getElementById('btnThemeAmberGold').addEventListener('click', () => {
+      draftConfig.theme = 'AMBER_GOLD';
+      applyTheme('AMBER_GOLD');
+      loadSettingsUi();
+    });
+    const btnThemeRed = document.getElementById('btnThemeRed');
+    if (btnThemeRed) {
+      btnThemeRed.addEventListener('click', () => {
+        draftConfig.theme = 'RED';
+        applyTheme('RED');
+        loadSettingsUi();
+      });
+    }
+
+    // EXACT "SAVE & APPLY" BUTTON WITH SPRING PRESS EFFECT
+    document.getElementById('btnSaveConfig').addEventListener('click', function() {
+      this.style.transform = 'scale(0.96)';
+      setTimeout(() => {
+        this.style.transform = 'scale(1)';
+        draftConfig.apiKey = document.getElementById('inputApiKey').value.trim();
+        draftConfig.userName = document.getElementById('inputUserName').value.trim() || 'Boss';
+        draftConfig.assistantName = document.getElementById('inputAssistantName')?.value.trim() || 'Jarvis';
+        config = { ...draftConfig };
+        localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(config));
+        applyTheme(config.theme);
+        updateWakePreview();
+        alert('Configuration Saved & Applied Successfully');
+        document.getElementById('settingsPage').classList.remove('active');
+      }, 100);
+    });
+
+    // ONBOARDING SIMULATION LOGIC
+    let currentObStep = 1;
+    const onboardingPage = document.getElementById('onboardingPage');
+    const btnLaunchOb = document.getElementById('btnLaunchOnboarding');
+
+    function showObStep(step) {
+      currentObStep = step;
+      document.getElementById('stepOb1').style.display = step === 1 ? 'flex' : 'none';
+      document.getElementById('stepOb2').style.display = step === 2 ? 'flex' : 'none';
+      document.getElementById('stepOb3').style.display = step === 3 ? 'flex' : 'none';
+      document.getElementById('lblOnboardStepIndicator').textContent = `STEP ${step} OF 3`;
+
+      document.getElementById('dotOb1').style.background = step === 1 ? 'var(--accent)' : '#1F273B';
+      document.getElementById('dotOb1').style.width = step === 1 ? '20px' : '8px';
+      document.getElementById('dotOb2').style.background = step === 2 ? 'var(--accent)' : '#1F273B';
+      document.getElementById('dotOb2').style.width = step === 2 ? '20px' : '8px';
+      document.getElementById('dotOb3').style.background = step === 3 ? 'var(--accent)' : '#1F273B';
+      document.getElementById('dotOb3').style.width = step === 3 ? '20px' : '8px';
+    }
+
+    if (btnLaunchOb) {
+      btnLaunchOb.addEventListener('click', () => {
+        showObStep(1);
+        onboardingPage.classList.add('active');
+      });
+    }
+
+    document.getElementById('btnObNext1')?.addEventListener('click', () => showObStep(2));
+    document.getElementById('btnObNext2')?.addEventListener('click', () => showObStep(3));
+
+    document.getElementById('btnObGrantAll')?.addEventListener('click', () => {
+      ['obBadgeMic', 'obBadgeCam', 'obBadgePhone', 'obBadgeOverlay'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.textContent = '● GRANTED';
+          el.className = 'perm-badge';
+        }
+      });
+    });
+
+    const btnToggleObKeyEye = document.getElementById('btnToggleObKeyEye');
+    if (btnToggleObKeyEye) {
+      btnToggleObKeyEye.addEventListener('click', () => {
+        const inp = document.getElementById('inputObApiKey');
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+      });
+    }
+
+    const btnObTestApi = document.getElementById('btnObTestApi');
+    if (btnObTestApi) {
+      btnObTestApi.addEventListener('click', () => {
+        const key = document.getElementById('inputObApiKey').value.trim();
+        const lbl = document.getElementById('lblObTestStatus');
+        if (!key) {
+          lbl.textContent = 'Enter key first';
+          lbl.style.color = 'var(--status-red)';
+          return;
+        }
+        lbl.textContent = 'Testing connection...';
+        lbl.style.color = 'var(--accent)';
+        setTimeout(() => {
+          lbl.textContent = '● Connection Successful!';
+          lbl.style.color = 'var(--status-green)';
+        }, 600);
+      });
+    }
+
+    document.getElementById('btnObFinish')?.addEventListener('click', () => {
+      const key = document.getElementById('inputObApiKey').value.trim();
+      if (!key) {
+        alert('Please enter your Gemini API key');
+        return;
+      }
+      config.apiKey = key;
+      localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(config));
+      onboardingPage.classList.remove('active');
+      alert('Welcome to Assistant! Setup complete.');
+    });
+
+    document.getElementById('btnResetSettings').addEventListener('click', () => {
+      draftConfig = { ...config };
+      applyTheme(config.theme);
+      loadSettingsUi();
+      alert('Configuration reset to saved values');
+    });
+
+    // 5 Categorized Permission Groups (Real Android Alignment: 10 capabilities)
+    const PERMISSION_CATEGORIES = [
+      {
+        name: 'CORE APP PERMISSIONS',
+        items: [
+          { key: 'MIC', title: 'Microphone Access', desc: 'Required for live voice conversation & streaming' },
+          { key: 'CAMERA', title: 'Camera Vision', desc: 'Required for real-time visual analysis preview' },
+          { key: 'CONTACTS', title: 'Contacts Access', desc: 'Required for addressing contacts in messages and calls' },
+          { key: 'PHONE', title: 'Phone Calls & SIM', desc: 'Required for voice-controlled call initiation' },
+          { key: 'NOTIFS', title: 'Notifications', desc: 'Required for background assistant service' }
+        ]
+      },
+      {
+        name: 'LOCATION & INFORMATION',
+        items: [
+          { key: 'LOCATION', title: 'Location Access', desc: 'Required for accurate local weather and location queries' }
+        ]
+      },
+      {
+        name: 'SYSTEM AUTOMATION & ACCESSIBILITY',
+        items: [
+          { key: 'A11Y', title: 'Accessibility Automation', desc: 'Required for hands-free UI navigation, scrolling, and clicking' },
+          { key: 'BATTERY', title: 'Battery Optimization', desc: 'Prevents the Android system from killing background JARVIS service' }
+        ]
+      },
+      {
+        name: 'SCREEN & FLOATING CONTROLS',
+        items: [
+          { key: 'OVERLAY', title: 'Display Over Other Apps', desc: 'Allows floating camera and overlay controls over any app' }
+        ]
+      },
+      {
+        name: 'BACKGROUND VOICE',
+        items: [
+          { key: 'BG_VOICE', title: 'Background Voice Engine', desc: 'Allows continuous voice engine when app is minimized' }
+        ]
+      }
+    ];
+
+    function renderPermissionsUi() {
+      const container = document.getElementById('permsCategorizedContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      let grantedCount = 0;
+      let totalCount = 0;
+
+      PERMISSION_CATEGORIES.forEach(cat => {
+        cat.items.forEach(item => {
+          totalCount++;
+          if (permissionsState[item.key]) grantedCount++;
+        });
+
+        // Category Header
+        const header = document.createElement('div');
+        header.className = 'section-label';
+        header.style.marginTop = '20px';
+        header.textContent = cat.name;
+        container.appendChild(header);
+
+        // Category Card
+        const card = document.createElement('div');
+        card.className = 'config-card';
+
+        cat.items.forEach(p => {
+          const isGranted = !!permissionsState[p.key];
+          let badgeLabel = isGranted ? 'GRANTED' : 'REQUIRED';
+          if (p.key === 'A11Y' || p.key === 'BG_VOICE') {
+            badgeLabel = isGranted ? 'ENABLED' : 'DISABLED';
+          }
+
+          const row = document.createElement('div');
+          row.className = 'perm-row';
+          row.innerHTML = `
+            <div class="perm-info">
+              <h4>${p.title}</h4>
+              <p>${p.desc}</p>
+            </div>
+            <div class="perm-badge ${isGranted ? '' : 'red'}">${badgeLabel}</div>
+          `;
+          row.onclick = () => {
+            permissionsState[p.key] = !permissionsState[p.key];
+            renderPermissionsUi();
+            updateBgServiceStatusUi();
+          };
+          card.appendChild(row);
+        });
+
+        container.appendChild(card);
+      });
+
+      const badgeEl = document.getElementById('lblPermCount');
+      if (badgeEl) {
+        badgeEl.textContent = `${grantedCount} of ${totalCount} Granted`;
+        badgeEl.className = 'perm-badge';
+        if (grantedCount === 0) {
+          badgeEl.classList.add('red');
+        } else if (grantedCount < totalCount) {
+          badgeEl.classList.add('amber');
+        }
+      }
+    }
+
+    document.getElementById('btnSyncPerms').addEventListener('click', () => {
+      renderPermissionsUi();
+      alert('Permission states synchronized with system');
+    });
+
+    document.getElementById('btnGrantAllPerms').addEventListener('click', () => {
+      Object.keys(permissionsState).forEach(k => permissionsState[k] = true);
+      renderPermissionsUi();
+      updateBgServiceStatusUi();
+    });
+  </script>
+</body>
+</html>

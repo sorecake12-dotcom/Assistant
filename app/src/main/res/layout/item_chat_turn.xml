@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginBottom="12dp">
+
+    <TextView
+        android:id="@+id/tvTimestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:textColor="@color/text_muted"
+        android:textSize="10sp"
+        android:layout_marginBottom="4dp"
+        android:visibility="gone"
+        tools:text="13:34:10" />
+
+    <!-- User Bubble: Gradient Cyan/Teal Rounded Pill -->
+    <LinearLayout
+        android:id="@+id/boxUserMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginStart="64dp"
+        android:background="@drawable/bg_chat_user_gradient"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="10dp">
+
+        <TextView
+            android:id="@+id/tvUserTranscript"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-medium"
+            tools:text="Jarvis, open WhatsApp." />
+    </LinearLayout>
+
+    <!-- Jarvis Bubble: Dark Rounded Card -->
+    <LinearLayout
+        android:id="@+id/boxJarvisMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_marginEnd="56dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_chat_jarvis"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp">
+
+        <TextView
+            android:id="@+id/tvJarvisResponse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif"
+            tools:text="WhatsApp open kar rahi hoon." />
+    </LinearLayout>
+
+</LinearLayout>

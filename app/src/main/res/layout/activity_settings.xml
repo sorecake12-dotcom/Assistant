@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_space"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
+
+    <!-- Top App Bar (JARVIS CONFIG) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="12dp">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_back"
+            android:contentDescription="Back"
+            app:tint="@color/text_primary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="JARVIS CONFIG"
+            android:textColor="@color/neon_blue"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-black"
+            android:letterSpacing="0.1"
+            app:layout_constraintStart_toEndOf="@+id/btnBack"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginStart="8dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageButton
+                android:id="@+id/btnReset"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_sync"
+                android:contentDescription="Reset"
+                app:tint="@color/neon_blue" />
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/ic_settings"
+                app:tint="@color/neon_blue" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Natural Vertical Smooth ScrollView (No visible scrollbar) -->
+    <ScrollView
+        android:id="@+id/scrollSettings"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="120dp">
+
+            <!-- 1. ACCOUNT & SECURITY -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ACCOUNT &amp; SECURITY"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginTop="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card_rounded"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gemini API Key"
+                    android:textColor="@color/neon_blue"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <!-- Masked API Key Input with Eye Toggle -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilApiKey"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:boxBackgroundColor="@color/bg_input"
+                    app:boxStrokeColor="@color/border_subtle"
+                    app:boxCornerRadiusTopStart="14dp"
+                    app:boxCornerRadiusTopEnd="14dp"
+                    app:boxCornerRadiusBottomStart="14dp"
+                    app:boxCornerRadiusBottomEnd="14dp"
+                    app:endIconMode="password_toggle"
+                    app:endIconTint="@color/text_secondary"
+                    app:hintEnabled="false">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etApiKey"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Paste your Gemini API key"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_muted"
+                        android:inputType="textPassword"
+                        android:singleLine="true"
+                        android:paddingVertical="14dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Test Connection Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="10dp">
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnTestApiKey"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_control_button"
+                        android:paddingHorizontal="14dp"
+                        android:text="TEST CONNECTION"
+                        android:textColor="@color/primary_cyan"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06" />
+
+                    <TextView
+                        android:id="@+id/tvApiKeyTestStatus"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:textColor="@color/text_muted"
+                        android:textSize="11sp"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:text="Key configured" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="User Name"
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp"
+                    android:layout_marginTop="18dp" />
+
+                <EditText
+                    android:id="@+id/etUserName"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_input_field"
+                    android:paddingHorizontal="16dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:singleLine="true"
+                    android:text="Boss" />
+
+                <!-- Assistant Name -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ASSISTANT NAME"
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp"
+                    android:layout_marginTop="18dp" />
+
+                <EditText
+                    android:id="@+id/etAssistantName"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_input_field"
+                    android:paddingHorizontal="16dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:singleLine="true"
+                    android:text="Jarvis" />
+
+                <TextView
+                    android:id="@+id/tvWakePhrasePreview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Wake phrase: &quot;Hello Jarvis&quot;"
+                    android:textColor="@color/neon_blue"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="6dp" />
+
+                <!-- Preferred SIM for Calls -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Preferred SIM for Calls"
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp"
+                    android:layout_marginTop="18dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_segmented_container"
+                    android:orientation="horizontal"
+                    android:padding="2dp">
+
+                    <TextView
+                        android:id="@+id/btnSim1"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="SIM 1"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:background="@drawable/bg_chip_active"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/btnSim2"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="SIM 2"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_secondary"
+                        android:background="@drawable/bg_chip_inactive"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 2. VOICE & INTELLIGENCE -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="VOICE &amp; INTELLIGENCE"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginTop="24dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card_rounded"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Jarvis Voices"
+                    android:textColor="@color/neon_blue"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <!-- Smooth Horizontal Voice Chips (No scrollbar) -->
+                <HorizontalScrollView
+                    android:id="@+id/scrollVoiceChips"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:scrollbars="none"
+                    android:overScrollMode="never"
+                    android:clipToPadding="false">
+
+                    <LinearLayout
+                        android:id="@+id/boxVoiceChips"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
+
+                <!-- App Permissions Button -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="App Permissions"
+                    android:textColor="@color/text_muted"
+                    android:textSize="11sp"
+                    android:layout_marginTop="20dp" />
+
+                <LinearLayout
+                    android:id="@+id/btnSystemAccess"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@drawable/bg_system_access_btn"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:layout_marginTop="8dp"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_shield"
+                        app:tint="@color/soft_blue" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="System Access &amp; Permissions"
+                        android:textColor="@color/soft_blue"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginStart="12dp" />
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_chevron_up"
+                        android:rotation="90"
+                        app:tint="@color/soft_blue" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- 3. PERSONALITY MATRIX (Proper Selectable Controls, Icon + Title) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PERSONALITY MATRIX"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginTop="24dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card_rounded"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:layout_marginTop="8dp">
+
+                <!-- Sliding Segmented Container for 3 Modes -->
+                <FrameLayout
+                    android:id="@+id/containerPersonalitySegment"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:background="@drawable/bg_segmented_container">
+
+                    <!-- Sliding Highlight Indicator (Moves smoothly across the 3 options) -->
+                    <View
+                        android:id="@+id/viewPersonalityIndicator"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_margin="3dp"
+                        android:background="@drawable/bg_segment_indicator" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <!-- 1. AI ASSISTANT -->
+                        <LinearLayout
+                            android:id="@+id/btnPersonalityAssistant"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <ImageView
+                                android:id="@+id/ivPersonalityAssistantIcon"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_sparkle"
+                                app:tint="@color/gold_obsidian" />
+
+                            <TextView
+                                android:id="@+id/tvPersonalityAssistantText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:text="AI ASSISTANT"
+                                android:textColor="@color/gold_obsidian"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- 2. GF -->
+                        <LinearLayout
+                            android:id="@+id/btnPersonalityGf"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <ImageView
+                                android:id="@+id/ivPersonalityGfIcon"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_heart"
+                                app:tint="@color/text_secondary" />
+
+                            <TextView
+                                android:id="@+id/tvPersonalityGfText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:text="GF"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- 3. PROFESSIONAL -->
+                        <LinearLayout
+                            android:id="@+id/btnPersonalityProfessional"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <ImageView
+                                android:id="@+id/ivPersonalityProfessionalIcon"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_briefcase"
+                                app:tint="@color/text_secondary" />
+
+                            <TextView
+                                android:id="@+id/tvPersonalityProfessionalText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:text="PROFESSIONAL"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="10.5sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvPersonalityDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontStyle="italic"
+                    tools:text="Your general-purpose Jarvis assistant for conversation, questions, and tasks." />
+            </LinearLayout>
+
+            <!-- 3. APPEARANCE & THEME (Sliding Segmented Control) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="APPEARANCE &amp; THEME"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginTop="24dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card_rounded"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:layout_marginTop="8dp">
+
+                <!-- Sliding Segmented Container -->
+                <FrameLayout
+                    android:id="@+id/containerThemeSegment"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:background="@drawable/bg_segmented_container">
+
+                    <!-- Sliding Highlight Indicator (Moves smoothly between options) -->
+                    <View
+                        android:id="@+id/viewThemeIndicator"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_margin="3dp"
+                        android:background="@drawable/bg_segment_indicator" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <!-- Arc Blue Tab -->
+                        <LinearLayout
+                            android:id="@+id/btnThemeArcBlue"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <ImageView
+                                android:id="@+id/ivArcBlueIcon"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_bolt"
+                                app:tint="#050507" />
+
+                            <TextView
+                                android:id="@+id/tvArcBlueText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ARC BLUE"
+                                android:textColor="#050507"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.06"
+                                android:layout_marginStart="5dp" />
+                        </LinearLayout>
+
+                        <!-- Amber Gold Tab -->
+                        <LinearLayout
+                            android:id="@+id/btnThemeAmberGold"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <ImageView
+                                android:id="@+id/ivAmberGoldIcon"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_crown"
+                                app:tint="@color/text_secondary" />
+
+                            <TextView
+                                android:id="@+id/tvAmberGoldText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="AMBER GOLD"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.06"
+                                android:layout_marginStart="5dp" />
+                        </LinearLayout>
+
+                        <!-- Red Tab -->
+                        <LinearLayout
+                            android:id="@+id/btnThemeRed"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <ImageView
+                                android:id="@+id/ivRedIcon"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_flame"
+                                app:tint="@color/text_secondary" />
+
+                            <TextView
+                                android:id="@+id/tvRedText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="RED"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.06"
+                                android:layout_marginStart="5dp" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvThemeDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontStyle="italic"
+                    tools:text="Arc Blue Theme (Electric Cyan &amp; Deep Space)" />
+            </LinearLayout>
+
+            <!-- 5. APPLICATION UPDATES -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="APPLICATION UPDATES"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginTop="24dp" />
+
+            <LinearLayout
+                android:id="@+id/btnCheckUpdates"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:background="@drawable/bg_card_rounded"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="18dp"
+                android:layout_marginTop="8dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_sync"
+                    app:tint="@color/soft_blue" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Check for System Updates"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="14dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Up to date >"
+                    android:textColor="@color/status_green"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- SAVE & APPLY BUTTON (Exact label 'SAVE & APPLY', full width, 58dp height, glowing primary action) -->
+            <Button
+                android:id="@+id/btnSaveApply"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="32dp"
+                android:background="@drawable/bg_btn_gradient"
+                android:text="SAVE &amp; APPLY"
+                android:textColor="#050507"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                app:backgroundTint="@null" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="14dp">
+
+    <!-- Permission Icon -->
+    <ImageView
+        android:id="@+id/ivPermIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_mic"
+        app:tint="@color/soft_blue" />
+
+    <!-- Title & Description -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="8dp">
+
+        <TextView
+            android:id="@+id/tvPermTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="Microphone Access" />
+
+        <TextView
+            android:id="@+id/tvPermDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_muted"
+            android:textSize="11sp"
+            android:layout_marginTop="2dp"
+            tools:text="Required for live voice conversation" />
+    </LinearLayout>
+
+    <!-- Status Badge (e.g. ● GRANTED or ● REQUIRED) -->
+    <TextView
+        android:id="@+id/tvPermStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/pill_jarvis_title"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="4dp"
+        android:textColor="@color/status_green"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.08"
+        tools:text="● GRANTED" />
+
+</LinearLayout>
