@@ -585,14 +585,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 4px;
+      padding: 0 4px;
+      white-space: nowrap;
       z-index: 2;
       cursor: pointer;
       border-radius: 13px;
       transition: color 0.2s;
     }
-    .personality-tab svg { width: 16px; height: 16px; fill: #9BA3B8; transition: fill 0.2s; }
-    .personality-tab span { font-size: 11px; font-weight: 800; color: #9BA3B8; transition: color 0.2s; letter-spacing: 0.02em; }
+    .personality-tab svg { width: 14px; height: 14px; flex-shrink: 0; fill: #9BA3B8; transition: fill 0.2s; }
+    .personality-tab span { font-size: 10px; font-weight: 800; color: #9BA3B8; transition: color 0.2s; letter-spacing: 0; white-space: nowrap; }
     .personality-tab.active svg { fill: var(--chip-active-text); }
     .personality-tab.active span { color: var(--chip-active-text); }
 
@@ -623,13 +625,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 4px;
+      padding: 0 4px;
+      white-space: nowrap;
       z-index: 2;
       cursor: pointer;
       border-radius: 13px;
+      transition: color 0.2s;
     }
-    .theme-tab svg { width: 15px; height: 15px; fill: #9BA3B8; transition: fill 0.2s; }
-    .theme-tab span { font-size: 11px; font-weight: 800; color: #9BA3B8; transition: color 0.2s; letter-spacing: 0.04em; }
+    .theme-tab svg { width: 14px; height: 14px; flex-shrink: 0; fill: #9BA3B8; transition: fill 0.2s; }
+    .theme-tab .theme-dot { width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; }
+    .theme-tab span { font-size: 10px; font-weight: 800; color: #9BA3B8; transition: color 0.2s; letter-spacing: 0.02em; white-space: nowrap; }
+    .theme-tab.active svg { fill: var(--chip-active-text); }
     .theme-tab.active span { color: var(--chip-active-text); }
 
     /* EXACT "SAVE & APPLY" BUTTON */
@@ -695,7 +702,7 @@
 
   <div class="preview-header">
     <h1 id="topHeadline">ASSISTANT</h1>
-    <p>Powered by JARVIS • Real Android APK • Official Icon • 3-Step Onboarding Flow</p>
+    <p>Assistant AI • Real Android APK • Official Icon • 3-Step Onboarding Flow</p>
     <div style="margin-top:8px;">
       <button id="btnLaunchOnboarding" style="background:#0E111A; border:1px solid var(--accent); color:var(--accent); border-radius:12px; padding:6px 14px; font-weight:700; font-size:11.5px; cursor:pointer; letter-spacing:0.04em;">SIMULATE FIRST LAUNCH ONBOARDING</button>
     </div>
@@ -724,7 +731,7 @@
           </div>
           <div class="capsule-center" id="btnHeaderHistory">
             <div class="capsule-title">ASSISTANT</div>
-            <div class="capsule-subtitle">POWERED BY JARVIS</div>
+            <div class="capsule-subtitle">ASSISTANT AI</div>
           </div>
           <div class="capsule-right">
             <div class="time-text" id="clock">14:50</div>
@@ -845,9 +852,8 @@
                 <svg id="svgEyeIconSettings" viewBox="0 0 24 24" width="20" height="20"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
               </button>
             </div>
-            <div style="display:flex; align-items:center; gap:10px; margin-top:4px;">
-              <button id="btnTestConfigApiKey" style="background:transparent; border:1px solid var(--accent); color:var(--accent); font-weight:700; font-size:11px; border-radius:10px; padding:6px 12px; cursor:pointer; letter-spacing:0.04em;">TEST CONNECTION</button>
-              <span id="lblConfigApiTestStatus" style="font-size:11px; color:#565F76;">Key configured</span>
+            <div id="lblConfigApiKeyError" style="display:none; color:#FF3B30; font-size:11.5px; font-weight:700; margin-top:8px; line-height:1.4;">
+              API Key Error: Invalid or inactive Gemini API Key. Please verify your key.
             </div>
             <span style="font-size:12px; font-weight:700; color:#565F76; margin-top:10px;">User Name</span>
             <input type="text" class="input-box" id="inputUserName" value="Boss">
@@ -982,7 +988,7 @@
         <div id="stepOb1" class="scroll-body" style="padding-top:12px; align-items:center; text-align:center;">
           <img src="app/src/main/res/drawable/ic_app_logo.png" style="width:88px; height:88px; border-radius:22px; box-shadow:0 8px 30px var(--accent-glow); margin-top:8px;" alt="Assistant Logo">
           <h2 style="font-size:26px; font-weight:900; color:#F4F4F6; margin-top:14px; letter-spacing:0.04em;">Assistant</h2>
-          <span style="font-size:12px; font-weight:800; color:var(--accent); letter-spacing:0.08em; margin-top:2px;">POWERED BY JARVIS</span>
+          <span style="font-size:12px; font-weight:800; color:var(--accent); letter-spacing:0.08em; margin-top:2px;">ASSISTANT AI</span>
           <p style="font-size:12px; color:#9BA3B8; line-height:1.5; margin-top:10px; max-width:90%;">
             Your personal voice, vision, and real-time device assistant. Experience futuristic AI with native Android integration.
           </p>
@@ -2017,23 +2023,13 @@
       });
     }
 
-    // Test API Connection in Settings
-    const btnTestConfigKey = document.getElementById('btnTestConfigApiKey');
-    if (btnTestConfigKey) {
-      btnTestConfigKey.addEventListener('click', () => {
-        const key = document.getElementById('inputApiKey').value.trim();
-        const lblStatus = document.getElementById('lblConfigApiTestStatus');
-        if (!key) {
-          lblStatus.textContent = 'Enter key first';
-          lblStatus.style.color = 'var(--status-red)';
-          return;
-        }
-        lblStatus.textContent = 'Testing connection...';
-        lblStatus.style.color = 'var(--accent)';
-        setTimeout(() => {
-          lblStatus.textContent = '● Connected & Active';
-          lblStatus.style.color = 'var(--status-green)';
-        }, 600);
+    // Clear error on input change
+    const inputApiKeyEl = document.getElementById('inputApiKey');
+    if (inputApiKeyEl) {
+      inputApiKeyEl.addEventListener('input', () => {
+        const errEl = document.getElementById('lblConfigApiKeyError');
+        if (errEl) errEl.style.display = 'none';
+        inputApiKeyEl.style.borderColor = 'var(--border-subtle)';
       });
     }
 
@@ -2056,21 +2052,63 @@
       });
     }
 
-    // EXACT "SAVE & APPLY" BUTTON WITH SPRING PRESS EFFECT
+    // EXACT "SAVE & APPLY" BUTTON WITH AUTOMATIC API KEY VALIDATION
     document.getElementById('btnSaveConfig').addEventListener('click', function() {
-      this.style.transform = 'scale(0.96)';
-      setTimeout(() => {
-        this.style.transform = 'scale(1)';
-        draftConfig.apiKey = document.getElementById('inputApiKey').value.trim();
+      const btn = this;
+      const key = document.getElementById('inputApiKey').value.trim();
+      const errEl = document.getElementById('lblConfigApiKeyError');
+      const inputEl = document.getElementById('inputApiKey');
+
+      btn.style.transform = 'scale(0.96)';
+      setTimeout(() => { btn.style.transform = 'scale(1)'; }, 100);
+
+      if (key) {
+        btn.textContent = 'VERIFYING KEY...';
+        btn.disabled = true;
+        if (errEl) errEl.style.display = 'none';
+        inputEl.style.borderColor = 'var(--border-subtle)';
+
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = 'SAVE & APPLY';
+
+          // If key is obviously wrong:
+          if (!key.startsWith('AIzaSy') || key.length < 25 || key.toLowerCase().includes('wrong') || key.toLowerCase().includes('error')) {
+            if (errEl) {
+              errEl.textContent = 'API Key Error: The Gemini API Key is invalid or not working. Please verify your key.';
+              errEl.style.display = 'block';
+            }
+            inputEl.style.borderColor = '#FF3B30';
+            inputEl.focus();
+            alert('API Key Error: The Gemini API Key is wrong or invalid. Settings could not be applied.');
+            return;
+          }
+
+          // Valid Key: Automatically active & save
+          if (errEl) errEl.style.display = 'none';
+          inputEl.style.borderColor = 'var(--border-subtle)';
+          draftConfig.apiKey = key;
+          draftConfig.userName = document.getElementById('inputUserName').value.trim() || 'Boss';
+          draftConfig.assistantName = document.getElementById('inputAssistantName')?.value.trim() || 'Jarvis';
+          config = { ...draftConfig };
+          localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(config));
+          applyTheme(config.theme);
+          updateWakePreview();
+          alert('Configuration Saved & Applied! Gemini AI is now active.');
+          document.getElementById('settingsPage').classList.remove('active');
+        }, 500);
+      } else {
+        if (errEl) errEl.style.display = 'none';
+        draftConfig.apiKey = '';
         draftConfig.userName = document.getElementById('inputUserName').value.trim() || 'Boss';
         draftConfig.assistantName = document.getElementById('inputAssistantName')?.value.trim() || 'Jarvis';
         config = { ...draftConfig };
         localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(config));
         applyTheme(config.theme);
         updateWakePreview();
-        alert('Configuration Saved & Applied Successfully');
+        alert('Configuration Saved & Applied.');
         document.getElementById('settingsPage').classList.remove('active');
-      }, 100);
+      }
     });
 
     // ONBOARDING SIMULATION LOGIC

@@ -30,9 +30,10 @@
             app:layout_constraintBottom_toBottomOf="parent" />
 
         <TextView
+            android:id="@+id/tvSettingsTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="JARVIS CONFIG"
+            android:text="ASSISTANT CONFIG"
             android:textColor="@color/neon_blue"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -145,38 +146,18 @@
                         android:paddingVertical="14dp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Test Connection Row -->
-                <LinearLayout
+                <!-- Inline API Key Error (Shown on Save & Apply validation failure) -->
+                <TextView
+                    android:id="@+id/tvApiKeyError"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="10dp">
+                    android:textColor="@color/crimson_red"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    android:layout_marginTop="8dp"
+                    android:text="API Key Error: Invalid or inactive Gemini API Key. Please verify your key." />
 
-                    <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/btnTestApiKey"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:background="@drawable/bg_control_button"
-                        android:paddingHorizontal="14dp"
-                        android:text="TEST CONNECTION"
-                        android:textColor="@color/primary_cyan"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.06" />
-
-                    <TextView
-                        android:id="@+id/tvApiKeyTestStatus"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:textColor="@color/text_muted"
-                        android:textSize="11sp"
-                        android:maxLines="2"
-                        android:ellipsize="end"
-                        android:text="Key configured" />
-                </LinearLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -412,13 +393,14 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:gravity="center"
+                            android:paddingHorizontal="4dp"
                             android:clickable="true"
                             android:focusable="true">
 
                             <ImageView
                                 android:id="@+id/ivPersonalityAssistantIcon"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
                                 android:src="@drawable/ic_sparkle"
                                 app:tint="@color/gold_obsidian" />
 
@@ -426,10 +408,13 @@
                                 android:id="@+id/tvPersonalityAssistantText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
+                                android:layout_marginStart="4dp"
                                 android:text="AI ASSISTANT"
                                 android:textColor="@color/gold_obsidian"
-                                android:textSize="11sp"
+                                android:textSize="10sp"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:ellipsize="end"
                                 android:textStyle="bold" />
                         </LinearLayout>
 
@@ -440,13 +425,14 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:gravity="center"
+                            android:paddingHorizontal="4dp"
                             android:clickable="true"
                             android:focusable="true">
 
                             <ImageView
                                 android:id="@+id/ivPersonalityGfIcon"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
                                 android:src="@drawable/ic_heart"
                                 app:tint="@color/text_secondary" />
 
@@ -454,10 +440,13 @@
                                 android:id="@+id/tvPersonalityGfText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
+                                android:layout_marginStart="4dp"
                                 android:text="GF"
                                 android:textColor="@color/text_secondary"
-                                android:textSize="11sp"
+                                android:textSize="10sp"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:ellipsize="end"
                                 android:textStyle="bold" />
                         </LinearLayout>
 
@@ -468,13 +457,14 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:gravity="center"
+                            android:paddingHorizontal="4dp"
                             android:clickable="true"
                             android:focusable="true">
 
                             <ImageView
                                 android:id="@+id/ivPersonalityProfessionalIcon"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
                                 android:src="@drawable/ic_briefcase"
                                 app:tint="@color/text_secondary" />
 
@@ -482,10 +472,13 @@
                                 android:id="@+id/tvPersonalityProfessionalText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="5dp"
+                                android:layout_marginStart="4dp"
                                 android:text="PROFESSIONAL"
                                 android:textColor="@color/text_secondary"
-                                android:textSize="10.5sp"
+                                android:textSize="10sp"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:ellipsize="end"
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </LinearLayout>
@@ -553,8 +546,8 @@
 
                             <ImageView
                                 android:id="@+id/ivArcBlueIcon"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
                                 android:src="@drawable/ic_bolt"
                                 app:tint="#050507" />
 
@@ -564,10 +557,13 @@
                                 android:layout_height="wrap_content"
                                 android:text="ARC BLUE"
                                 android:textColor="#050507"
-                                android:textSize="11sp"
+                                android:textSize="10sp"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:ellipsize="end"
                                 android:textStyle="bold"
-                                android:letterSpacing="0.06"
-                                android:layout_marginStart="5dp" />
+                                android:letterSpacing="0.04"
+                                android:layout_marginStart="4dp" />
                         </LinearLayout>
 
                         <!-- Amber Gold Tab -->
@@ -577,13 +573,14 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:gravity="center"
+                            android:paddingHorizontal="4dp"
                             android:clickable="true"
                             android:focusable="true">
 
                             <ImageView
                                 android:id="@+id/ivAmberGoldIcon"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
                                 android:src="@drawable/ic_crown"
                                 app:tint="@color/text_secondary" />
 
@@ -593,10 +590,13 @@
                                 android:layout_height="wrap_content"
                                 android:text="AMBER GOLD"
                                 android:textColor="@color/text_secondary"
-                                android:textSize="11sp"
+                                android:textSize="10sp"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:ellipsize="end"
                                 android:textStyle="bold"
-                                android:letterSpacing="0.06"
-                                android:layout_marginStart="5dp" />
+                                android:letterSpacing="0.04"
+                                android:layout_marginStart="4dp" />
                         </LinearLayout>
 
                         <!-- Red Tab -->
@@ -606,13 +606,14 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:gravity="center"
+                            android:paddingHorizontal="4dp"
                             android:clickable="true"
                             android:focusable="true">
 
                             <ImageView
                                 android:id="@+id/ivRedIcon"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
                                 android:src="@drawable/ic_flame"
                                 app:tint="@color/text_secondary" />
 
@@ -622,10 +623,13 @@
                                 android:layout_height="wrap_content"
                                 android:text="RED"
                                 android:textColor="@color/text_secondary"
-                                android:textSize="11sp"
+                                android:textSize="10sp"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:ellipsize="end"
                                 android:textStyle="bold"
-                                android:letterSpacing="0.06"
-                                android:layout_marginStart="5dp" />
+                                android:letterSpacing="0.04"
+                                android:layout_marginStart="4dp" />
                         </LinearLayout>
 
                     </LinearLayout>

@@ -198,76 +198,75 @@ class OnboardingActivity : AppCompatActivity() {
     }
 
     private fun setupConnectAiActions() {
-        binding.btnTestConnection.setOnClickListener {
-            val key = binding.etOnboardingApiKey.text?.toString()?.trim() ?: ""
-            if (key.isEmpty()) {
-                binding.tvTestStatus.text = "Please enter an API key first"
-                binding.tvTestStatus.setTextColor(ContextCompat.getColor(this, R.color.status_red))
-                return@setOnClickListener
+        binding.etOnboardingApiKey.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                if (binding.tvOnboardingApiKeyError.visibility == View.VISIBLE) {
+                    binding.tvOnboardingApiKeyError.visibility = View.GONE
+                }
             }
-            testGeminiApiKey(key)
-        }
+        })
 
         binding.btnSaveAndLaunch.setOnClickListener {
             val key = binding.etOnboardingApiKey.text?.toString()?.trim() ?: ""
             if (key.isEmpty()) {
-                Toast.makeText(this, "Please enter your Gemini API key", Toast.LENGTH_SHORT).show()
+                binding.tvOnboardingApiKeyError.text = "Please enter your Gemini API key to continue."
+                binding.tvOnboardingApiKeyError.visibility = View.VISIBLE
                 return@setOnClickListener
             }
 
-            preferences.apiKey = key
-            preferences.isFirstLaunchComplete = true
+            binding.btnSaveAndLaunch.isEnabled = false
+            binding.btnSaveAndLaunch.text = "VERIFYING KEY..."
+            binding.tvOnboardingApiKeyError.visibility = View.GONE
 
-            Toast.makeText(this, "Welcome to Assistant!", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            startActivity(intent)
-            finish()
-        }
-    }
+            lifecycleScope.launch(Dispatchers.IO) {
+                var isSuccess = false
+                var errorMessage = ""
 
-    private fun testGeminiApiKey(key: String) {
-        if (isTestingApi) return
-        isTestingApi = true
+                try {
+                    val url = "https://generativelanguage.googleapis.com/v1beta/models?key=$key"
+                    val request = Request.Builder().url(url).get().build()
+                    val response = httpClient.newCall(request).execute()
 
-        binding.tvTestStatus.text = "Testing connection..."
-        binding.tvTestStatus.setTextColor(ContextCompat.getColor(this, R.color.primary_cyan))
-        binding.btnTestConnection.isEnabled = false
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            var isSuccess = false
-            var errorMessage = ""
-
-            try {
-                val url = "https://generativelanguage.googleapis.com/v1beta/models?key=$key"
-                val request = Request.Builder().url(url).get().build()
-                val response = httpClient.newCall(request).execute()
-
-                if (response.isSuccessful) {
-                    isSuccess = true
-                } else {
-                    val code = response.code
-                    errorMessage = if (code == 400 || code == 403) {
-                        "Invalid API key or unauthorized ($code)"
+                    if (response.isSuccessful) {
+                        isSuccess = true
                     } else {
-                        "API Error ($code)"
+                        val code = response.code
+                        errorMessage = if (code == 400 || code == 403) {
+                            "API Key is invalid or unauthorized ($code). Please enter a valid Gemini key."
+                        } else {
+                            "API Error ($code). Please check your key."
+                        }
                     }
+                } catch (e: Exception) {
+                    errorMessage = "Connection failed: ${e.localizedMessage ?: "Network error"}"
                 }
-            } catch (e: Exception) {
-                errorMessage = e.localizedMessage ?: "Network error"
-            }
 
-            withContext(Dispatchers.Main) {
-                isTestingApi = false
-                binding.btnTestConnection.isEnabled = true
+                withContext(Dispatchers.Main) {
+                    binding.btnSaveAndLaunch.isEnabled = true
+                    binding.btnSaveAndLaunch.text = "SAVE & LAUNCH ASSISTANT"
 
-                if (isSuccess) {
-                    binding.tvTestStatus.text = "● Connection Successful!"
-                    binding.tvTestStatus.setTextColor(ContextCompat.getColor(this@OnboardingActivity, R.color.status_green))
-                } else {
-                    binding.tvTestStatus.text = "● Failed: $errorMessage"
-                    binding.tvTestStatus.setTextColor(ContextCompat.getColor(this@OnboardingActivity, R.color.status_red))
+                    if (isSuccess) {
+                        preferences.apiKey = key
+                        preferences.isFirstLaunchComplete = true
+
+                        Toast.makeText(this@OnboardingActivity, "Welcome to Assistant! Gemini AI is active.", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(this@OnboardingActivity, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        binding.tvOnboardingApiKeyError.text = errorMessage
+                        binding.tvOnboardingApiKeyError.visibility = View.VISIBLE
+                        binding.etOnboardingApiKey.requestFocus()
+                        Toast.makeText(
+                            this@OnboardingActivity,
+                            "API Key is wrong or invalid. Please check your key.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             }
         }

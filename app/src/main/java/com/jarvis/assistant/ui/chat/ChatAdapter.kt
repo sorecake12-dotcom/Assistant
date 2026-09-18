@@ -25,8 +25,10 @@ class ChatAdapter : ListAdapter<ChatTurn, ChatAdapter.ChatViewHolder>(DiffCallba
 
     class ChatViewHolder(private val binding: ItemChatTurnBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(turn: ChatTurn) {
+            val assistantName = com.jarvis.assistant.JarvisApp.instance.preferences.assistantName
             binding.tvTimestamp.text = turn.formattedTime
             binding.tvUserTranscript.text = turn.userTranscript
+            binding.tvAssistantSenderName.text = assistantName
             binding.tvJarvisResponse.text = turn.jarvisResponse
         }
     }

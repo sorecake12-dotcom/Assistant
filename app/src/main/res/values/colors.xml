@@ -29,6 +29,7 @@
     <color name="status_green">#00E676</color>
     <color name="status_red">#FF1744</color>
     <color name="status_amber">#FFD600</color>
+    <color name="crimson_red">#FF3B30</color>
     
     <color name="text_primary">#F4F4F6</color>
     <color name="text_secondary">#9BA3B8</color>

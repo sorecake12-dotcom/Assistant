@@ -18,7 +18,7 @@ import androidx.core.content.ContextCompat
 import com.jarvis.assistant.R
 import com.jarvis.assistant.databinding.ActivityPermissionsBinding
 import com.jarvis.assistant.databinding.ItemPermissionRowBinding
-import com.jarvis.assistant.service.JarvisBackgroundService
+import com.jarvis.assistant.service.JarvisVoiceService
 import com.jarvis.assistant.util.PermissionCategory
 import com.jarvis.assistant.util.PermissionManager
 import com.jarvis.assistant.util.PermissionState
@@ -138,9 +138,9 @@ class PermissionsActivity : AppCompatActivity() {
                 }
                 rowBinding.tvPermStatus.text = statusText
                 val colorRes = when (perm.status) {
-                    PermissionState.GRANTED -> R.color.status_green
-                    PermissionState.DENIED -> R.color.status_red
-                    PermissionState.REQUIRES_SETTINGS -> R.color.gold_amber
+                    PermissionState.GRANTED, PermissionState.ENABLED, PermissionState.UNRESTRICTED, PermissionState.ACTIVE -> R.color.status_green
+                    PermissionState.DENIED, PermissionState.DISABLED, PermissionState.OFF -> R.color.status_red
+                    PermissionState.REQUIRES_SETTINGS, PermissionState.OPTIMIZED -> R.color.gold_amber
                     PermissionState.NOT_AVAILABLE -> R.color.text_muted
                 }
                 rowBinding.tvPermStatus.setTextColor(ContextCompat.getColor(this, colorRes))
@@ -231,7 +231,7 @@ class PermissionsActivity : AppCompatActivity() {
                 }
             }
             "BG_VOICE" -> {
-                JarvisBackgroundService.toggle(this)
+                JarvisVoiceService.toggle(this)
                 refreshPermissionsUi()
             }
             "WAKE_WORD" -> {

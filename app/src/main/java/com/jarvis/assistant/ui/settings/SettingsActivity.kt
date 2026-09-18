@@ -105,64 +105,16 @@ class SettingsActivity : AppCompatActivity() {
             .readTimeout(10, TimeUnit.SECONDS)
             .build()
     }
-    private var isTestingApi = false
-
     private fun setupApiKeyActions() {
-        binding.btnTestApiKey.setOnClickListener {
-            val key = binding.etApiKey.text?.toString()?.trim() ?: ""
-            if (key.isEmpty()) {
-                binding.tvApiKeyTestStatus.text = "Please enter key first"
-                binding.tvApiKeyTestStatus.setTextColor(ContextCompat.getColor(this, R.color.status_red))
-                return@setOnClickListener
-            }
-            testApiKey(key)
-        }
-    }
-
-    private fun testApiKey(key: String) {
-        if (isTestingApi) return
-        isTestingApi = true
-
-        binding.tvApiKeyTestStatus.text = "Testing connection..."
-        binding.tvApiKeyTestStatus.setTextColor(ContextCompat.getColor(this, R.color.primary_cyan))
-        binding.btnTestApiKey.isEnabled = false
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            var isSuccess = false
-            var errorMessage = ""
-
-            try {
-                val url = "https://generativelanguage.googleapis.com/v1beta/models?key=$key"
-                val request = Request.Builder().url(url).get().build()
-                val response = httpClient.newCall(request).execute()
-
-                if (response.isSuccessful) {
-                    isSuccess = true
-                } else {
-                    val code = response.code
-                    errorMessage = if (code == 400 || code == 403) {
-                        "Invalid key or unauthorized ($code)"
-                    } else {
-                        "API Error ($code)"
-                    }
-                }
-            } catch (e: Exception) {
-                errorMessage = e.localizedMessage ?: "Network error"
-            }
-
-            withContext(Dispatchers.Main) {
-                isTestingApi = false
-                binding.btnTestApiKey.isEnabled = true
-
-                if (isSuccess) {
-                    binding.tvApiKeyTestStatus.text = "● Connected & Active"
-                    binding.tvApiKeyTestStatus.setTextColor(ContextCompat.getColor(this@SettingsActivity, R.color.status_green))
-                } else {
-                    binding.tvApiKeyTestStatus.text = "● Failed: $errorMessage"
-                    binding.tvApiKeyTestStatus.setTextColor(ContextCompat.getColor(this@SettingsActivity, R.color.status_red))
+        binding.etApiKey.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                if (binding.tvApiKeyError.visibility == View.VISIBLE) {
+                    binding.tvApiKeyError.visibility = View.GONE
                 }
             }
-        }
+        })
     }
 
     private fun setupAssistantNameInput() {
@@ -175,6 +127,7 @@ class SettingsActivity : AppCompatActivity() {
                 draftConfig.assistantName = name
                 draftConfig.wakeWord = "Hello $name"
                 binding.tvWakePhrasePreview.text = "Wake phrase: \"Hello $name\""
+                binding.tvSettingsTitle.text = "${name.uppercase()} CONFIG"
             }
         })
     }
@@ -248,6 +201,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun applyConfigToUi(config: JarvisDraftConfig) {
+        binding.tvSettingsTitle.text = "${config.assistantName.uppercase()} CONFIG"
         binding.etApiKey.setText(config.apiKey)
         binding.etUserName.setText(config.userName)
         binding.etAssistantName.setText(config.assistantName)
@@ -283,6 +237,7 @@ class SettingsActivity : AppCompatActivity() {
             val phoneCount = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 tm?.activeModemCount ?: 1
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                @Suppress("DEPRECATION")
                 tm?.phoneCount ?: 1
             } else 1
 
@@ -617,6 +572,56 @@ class SettingsActivity : AppCompatActivity() {
         val userName = binding.etUserName.text?.toString()?.trim() ?: "Boss"
         val assistantName = binding.etAssistantName.text?.toString()?.trim()?.ifEmpty { "Jarvis" } ?: "Jarvis"
 
+        if (apiKey.isNotEmpty()) {
+            binding.btnSaveApply.isEnabled = false
+            binding.btnSaveApply.text = "VERIFYING KEY..."
+            binding.tvApiKeyError.visibility = View.GONE
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                var isValid = false
+                var errorMsg = ""
+                try {
+                    val url = "https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey"
+                    val request = Request.Builder().url(url).get().build()
+                    val response = httpClient.newCall(request).execute()
+                    if (response.isSuccessful) {
+                        isValid = true
+                    } else {
+                        val code = response.code
+                        errorMsg = if (code == 400 || code == 403) {
+                            "API Key is invalid or unauthorized ($code). Please enter a valid Gemini key."
+                        } else {
+                            "Gemini API error ($code). Please verify your key."
+                        }
+                    }
+                } catch (e: Exception) {
+                    errorMsg = "Connection failed: ${e.localizedMessage ?: "Network error"}"
+                }
+
+                withContext(Dispatchers.Main) {
+                    binding.btnSaveApply.isEnabled = true
+                    binding.btnSaveApply.text = "SAVE & APPLY"
+
+                    if (isValid) {
+                        commitAndFinish(apiKey, userName, assistantName)
+                    } else {
+                        binding.tvApiKeyError.text = errorMsg
+                        binding.tvApiKeyError.visibility = View.VISIBLE
+                        binding.etApiKey.requestFocus()
+                        Toast.makeText(
+                            this@SettingsActivity,
+                            "API Key is wrong or invalid. Settings could not be applied.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }
+        } else {
+            commitAndFinish(apiKey, userName, assistantName)
+        }
+    }
+
+    private fun commitAndFinish(apiKey: String, userName: String, assistantName: String) {
         draftConfig.apiKey = apiKey
         draftConfig.userName = userName
         draftConfig.assistantName = assistantName
@@ -636,7 +641,8 @@ class SettingsActivity : AppCompatActivity() {
         savedConfig = draftConfig.copy()
 
         setResult(RESULT_OK)
-        Toast.makeText(this, "Configuration Saved & Applied", Toast.LENGTH_SHORT).show()
+        val msg = if (apiKey.isNotEmpty()) "Configuration Saved & Applied. Gemini AI is active!" else "Configuration Saved & Applied"
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         finish()
     }
 }

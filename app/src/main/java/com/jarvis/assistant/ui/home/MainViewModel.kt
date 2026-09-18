@@ -10,6 +10,9 @@ import android.os.BatteryManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.jarvis.assistant.JarvisApp
+import com.jarvis.assistant.action.ActionExecutor
+import com.jarvis.assistant.action.ActionParser
+import com.jarvis.assistant.action.AssistantAction
 import com.jarvis.assistant.audio.AudioPlayer
 import com.jarvis.assistant.audio.AudioRecorder
 import com.jarvis.assistant.data.model.ConversationState
@@ -65,6 +68,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _personalityName = MutableStateFlow(preferences.personality)
     val personalityName: StateFlow<String> = _personalityName.asStateFlow()
+
+    private val _assistantName = MutableStateFlow(preferences.assistantName)
+    val assistantName: StateFlow<String> = _assistantName.asStateFlow()
 
     private val _eventFlow = MutableSharedFlow<String>()
     val eventFlow: SharedFlow<String> = _eventFlow.asSharedFlow()
@@ -129,12 +135,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun refreshSettings() {
-        _personalityName.value = preferences.personality
-        _isMicMuted.value = preferences.isMicMuted
-        audioRecorder?.setMuted(preferences.isMicMuted)
-    }
-
     fun toggleSession() {
         if (_isSessionOn.value) {
             stopSession()
@@ -178,7 +178,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         // 2. Gemini Live WebSocket Connection
         val systemPrompt = PromptGenerator.generateSystemPrompt(
             personality = preferences.personality,
-            userName = preferences.userName
+            userName = preferences.userName,
+            assistantName = preferences.assistantName
         )
 
         liveWebSocket = GeminiLiveWebSocket(
@@ -306,24 +307,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private var lastActivePersonality: String = preferences.personality
     private var lastActiveVoice: String = preferences.voice
+    private var lastActiveAssistantName: String = preferences.assistantName
 
     fun refreshSettings() {
+        _personalityName.value = preferences.personality
+        _isMicMuted.value = preferences.isMicMuted
+        _assistantName.value = preferences.assistantName
+        audioRecorder?.setMuted(preferences.isMicMuted)
+
         val currentPersonality = preferences.personality
         val currentVoice = preferences.voice
+        val currentAssistantName = preferences.assistantName
 
-        // If session is active and user changed personality or voice in Settings, renew session with new instructions
-        if (_isSessionOn.value && (currentPersonality != lastActivePersonality || currentVoice != lastActiveVoice)) {
+        // If session is active and user changed personality, voice, or assistant name in Settings, renew session with new instructions
+        if (_isSessionOn.value && (currentPersonality != lastActivePersonality || currentVoice != lastActiveVoice || currentAssistantName != lastActiveAssistantName)) {
             lastActivePersonality = currentPersonality
             lastActiveVoice = currentVoice
+            lastActiveAssistantName = currentAssistantName
             stopSession()
             startSession()
             viewModelScope.launch {
                 val modeName = PersonalityMode.fromId(currentPersonality).displayName
-                _eventFlow.emit("Applied $modeName Personality")
+                _eventFlow.emit("Applied $modeName Personality • $currentAssistantName")
             }
         } else {
             lastActivePersonality = currentPersonality
             lastActiveVoice = currentVoice
+            lastActiveAssistantName = currentAssistantName
         }
     }
 
@@ -331,29 +341,48 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val clean = userQuery.trim()
         if (clean.isEmpty()) return
 
-        // Record turn in repository with mode-specific behavioral reply
-        val mode = PersonalityMode.fromId(preferences.personality)
-        val name = preferences.userName.ifBlank { "Boss" }
-        val reply = when (mode) {
-            PersonalityMode.GF -> when {
-                clean.contains("tired", ignoreCase = true) -> "Aww, then take it a little easy today na. You've been pushing yourself way too hard. ❤️"
-                clean.contains("doing", ignoreCase = true) -> "Just hanging around here waiting for you! What are you up to?"
-                clean.contains("day", ignoreCase = true) -> "Arey, my day is always better when I'm talking with you! How was yours, thak gaye kya?"
-                else -> "Haan $name, main sun rahi hoon na. Hamesha aapke saath hoon."
+        val assistantName = preferences.assistantName
+        val action = ActionParser.parse(clean, assistantName)
+
+        val reply: String
+        if (action !is AssistantAction.UnknownAction) {
+            val executor = ActionExecutor(getApplication())
+            val result = executor.execute(action)
+            reply = result.spokenFeedback
+            if (result.shouldCloseApp) {
+                val closeIntent = Intent("com.jarvis.assistant.ACTION_CLOSE_ASSISTANT").apply {
+                    setPackage(getApplication<Application>().packageName)
+                }
+                getApplication<Application>().sendBroadcast(closeIntent)
             }
-            PersonalityMode.PROFESSIONAL -> when {
-                clean.contains("explain", ignoreCase = true) || clean.contains("error", ignoreCase = true) ->
-                    "Analysis indicates nominal execution with the following parameters:\n1. Verify system configuration\n2. Maintain process integrity\n3. Execute required protocol."
-                clean.contains("day", ignoreCase = true) -> "All operations are performing within nominal parameters. Standing by for instructions."
-                clean.contains("tired", ignoreCase = true) -> "Understood. Recommending rest period to optimize cognitive focus. Current queue is persisted."
-                else -> "Instruction acknowledged. Processing request under executive guidelines."
+            if (result.shouldEndSession) {
+                stopSession()
             }
-            PersonalityMode.AI_ASSISTANT -> when {
-                clean.contains("weather", ignoreCase = true) -> "I'll check the latest weather report for you right away."
-                clean.contains("day", ignoreCase = true) -> "It's been a great day assisting you, $name! Ready for anything you need."
-                clean.contains("ram", ignoreCase = true) -> "RAM is the short-term working memory of your device that holds active data for fast processor access."
-                clean.contains("tired", ignoreCase = true) -> "Make sure to get adequate rest, $name. I can handle any quick tasks if needed."
-                else -> "Online and ready, $name. Processing your request."
+        } else {
+            // Record turn in repository with mode-specific behavioral reply
+            val mode = PersonalityMode.fromId(preferences.personality)
+            val name = preferences.userName.ifBlank { "Boss" }
+            reply = when (mode) {
+                PersonalityMode.GF -> when {
+                    clean.contains("tired", ignoreCase = true) -> "Aww, then take it a little easy today na. You've been pushing yourself way too hard. ❤️"
+                    clean.contains("doing", ignoreCase = true) -> "Just hanging around here waiting for you! What are you up to?"
+                    clean.contains("day", ignoreCase = true) -> "Arey, my day is always better when I'm talking with you! How was yours, thak gaye kya?"
+                    else -> "Haan $name, main sun rahi hoon na. Hamesha aapke saath hoon."
+                }
+                PersonalityMode.PROFESSIONAL -> when {
+                    clean.contains("explain", ignoreCase = true) || clean.contains("error", ignoreCase = true) ->
+                        "Analysis indicates nominal execution with the following parameters:\n1. Verify system configuration\n2. Maintain process integrity\n3. Execute required protocol."
+                    clean.contains("day", ignoreCase = true) -> "All operations are performing within nominal parameters. Standing by for instructions."
+                    clean.contains("tired", ignoreCase = true) -> "Understood. Recommending rest period to optimize cognitive focus. Current queue is persisted."
+                    else -> "Instruction acknowledged. Processing request under executive guidelines."
+                }
+                PersonalityMode.AI_ASSISTANT -> when {
+                    clean.contains("weather", ignoreCase = true) -> "I'll check the latest weather report for you right away."
+                    clean.contains("day", ignoreCase = true) -> "It's been a great day assisting you, $name! Ready for anything you need."
+                    clean.contains("ram", ignoreCase = true) -> "RAM is the short-term working memory of your device that holds active data for fast processor access."
+                    clean.contains("tired", ignoreCase = true) -> "Make sure to get adequate rest, $name. I can handle any quick tasks if needed."
+                    else -> "Online and ready, $name. Processing your request."
+                }
             }
         }
         chatRepository.addTurn(userText = clean, jarvisText = reply)

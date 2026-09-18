@@ -30,6 +30,7 @@ object GeminiConstants {
     
     const val PERSONALITY_AI_ASSISTANT = "AI_ASSISTANT"
     const val PERSONALITY_GIRLFRIEND = "GF"
+    const val PERSONALITY_GF = "GF"
     const val PERSONALITY_PROFESSIONAL = "PROFESSIONAL"
     const val PERSONALITY_ASSISTANT = "AI_ASSISTANT"
     

@@ -40,8 +40,8 @@ class JarvisVoiceService : Service(), TextToSpeech.OnInitListener {
     companion object {
         private const val TAG = "JarvisVoiceService"
         private const val NOTIFICATION_ID = 2001
-        private const val CHANNEL_ID = "jarvis_voice_channel"
-        private const val CHANNEL_NAME = "JARVIS Voice Background Service"
+        private const val CHANNEL_ID = "assistant_voice_channel"
+        private const val CHANNEL_NAME = "Assistant AI Voice Service"
 
         const val ACTION_START_SESSION = "action_start_session"
         const val ACTION_END_SESSION = "action_end_session"
@@ -90,6 +90,16 @@ class JarvisVoiceService : Service(), TextToSpeech.OnInitListener {
                 action = if (muted) ACTION_MUTE else ACTION_UNMUTE
             }
             context.startService(intent)
+        }
+
+        fun toggle(context: Context) {
+            if (isRunning) {
+                stop(context)
+                JarvisApp.instance.preferences.isBackgroundVoiceEnabled = false
+            } else {
+                start(context)
+                JarvisApp.instance.preferences.isBackgroundVoiceEnabled = true
+            }
         }
     }
 
@@ -199,7 +209,7 @@ class JarvisVoiceService : Service(), TextToSpeech.OnInitListener {
         cancelSilenceTimers()
         val prefs = (application as JarvisApp).preferences
         val assistantName = prefs.assistantName
-        val message = "Boss, I am going into silent mode. If you need me, just say, 'Hello $assistantName.'"
+        val message = "I am going into silent mode. If you want me, just say, Hello $assistantName."
 
         _serviceState.value = ConversationState.SILENT
         updateNotification("Silent Mode — Say 'Hello $assistantName' to resume")
@@ -218,7 +228,7 @@ class JarvisVoiceService : Service(), TextToSpeech.OnInitListener {
 
     private fun timeoutAndEndSession() {
         cancelSilenceTimers()
-        speak("Bye, Boss.") {
+        speak("Bye Boss") {
             endSessionInternal()
         }
     }
@@ -277,7 +287,7 @@ class JarvisVoiceService : Service(), TextToSpeech.OnInitListener {
                 CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Continuous voice listening service for Jarvis hotword"
+                description = "Continuous voice listening service for Assistant AI"
                 setShowBadge(false)
             }
             val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -296,10 +306,12 @@ class JarvisVoiceService : Service(), TextToSpeech.OnInitListener {
             PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
         )
 
+        val assistantName = (application as? JarvisApp)?.preferences?.assistantName ?: "Jarvis"
+
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("JARVIS Voice Assistant")
+            .setContentTitle("Assistant AI • $assistantName")
             .setContentText(statusText)
-            .setSmallIcon(R.drawable.ic_jarvis_logo)
+            .setSmallIcon(R.drawable.ic_app_logo)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -328,11 +340,12 @@ class JarvisVoiceService : Service(), TextToSpeech.OnInitListener {
             return
         }
 
+        val assistantName = (application as? JarvisApp)?.preferences?.assistantName ?: "Jarvis"
         _serviceState.value = ConversationState.SPEAKING
-        updateNotification("JARVIS speaking...")
+        updateNotification("$assistantName is speaking...")
 
         val params = Bundle().apply {
-            putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "JARVIS_VOICE_${System.currentTimeMillis()}")
+            putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "ASSISTANT_VOICE_${System.currentTimeMillis()}")
         }
 
         tts?.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
@@ -349,7 +362,7 @@ class JarvisVoiceService : Service(), TextToSpeech.OnInitListener {
             }
         })
 
-        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, "JARVIS_VOICE")
+        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, "ASSISTANT_VOICE")
     }
 
     private fun startCommandCapture() {
@@ -357,8 +370,9 @@ class JarvisVoiceService : Service(), TextToSpeech.OnInitListener {
             return
         }
 
+        val assistantName = (application as? JarvisApp)?.preferences?.assistantName ?: "Jarvis"
         _serviceState.value = ConversationState.LISTENING
-        updateNotification("Listening for command...")
+        updateNotification("$assistantName is listening...")
 
         speechRecognizer?.destroy()
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
@@ -419,7 +433,14 @@ class JarvisVoiceService : Service(), TextToSpeech.OnInitListener {
         Log.i(TAG, "Action result: ${result.spokenFeedback}")
 
         speak(result.spokenFeedback) {
-            if (result.shouldEndSession) {
+            if (result.shouldCloseApp) {
+                val closeIntent = Intent("com.jarvis.assistant.ACTION_CLOSE_ASSISTANT").apply {
+                    setPackage(packageName)
+                }
+                sendBroadcast(closeIntent)
+            }
+
+            if (result.shouldEndSession || result.shouldCloseApp) {
                 endSessionInternal()
             } else if (result.pendingConfirmation) {
                 // Keep listening for user confirmation ("Yes" / "No")

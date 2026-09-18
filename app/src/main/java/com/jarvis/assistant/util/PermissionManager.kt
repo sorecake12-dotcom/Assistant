@@ -29,7 +29,9 @@ enum class PermissionCategory(val title: String) {
     LOCATION("LOCATION & INFORMATION"),
     AUTOMATION("SYSTEM AUTOMATION & ACCESSIBILITY"),
     SCREEN("SCREEN & FLOATING CONTROLS"),
-    BACKGROUND("BACKGROUND ASSISTANT")
+    BACKGROUND("BACKGROUND ASSISTANT");
+
+    val displayName: String get() = title
 }
 
 data class PermissionStatus(

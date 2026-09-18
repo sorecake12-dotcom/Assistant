@@ -109,7 +109,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Powered by JARVIS Intelligence"
+                    android:text="Assistant AI"
                     android:textColor="@color/primary_cyan"
                     android:textSize="13sp"
                     android:textStyle="bold"
@@ -643,38 +643,17 @@
                             android:textSize="13sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Test Connection Button & Status Row -->
-                    <LinearLayout
+                    <!-- Inline API Key Error (Shown on Launch validation failure) -->
+                    <TextView
+                        android:id="@+id/tvOnboardingApiKeyError"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="14dp">
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/btnTestConnection"
-                            android:layout_width="wrap_content"
-                            android:layout_height="38dp"
-                            android:background="@drawable/bg_control_button"
-                            android:paddingHorizontal="14dp"
-                            android:text="TEST CONNECTION"
-                            android:textColor="@color/primary_cyan"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.06" />
-
-                        <TextView
-                            android:id="@+id/tvTestStatus"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="12dp"
-                            android:textColor="@color/text_muted"
-                            android:textSize="12sp"
-                            android:maxLines="2"
-                            android:ellipsize="end"
-                            android:text="Not tested yet" />
-                    </LinearLayout>
+                        android:textColor="@color/crimson_red"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        android:layout_marginTop="8dp"
+                        android:text="API Key Error: Invalid or inactive Gemini API Key. Please verify your key." />
 
                     <TextView
                         android:layout_width="wrap_content"

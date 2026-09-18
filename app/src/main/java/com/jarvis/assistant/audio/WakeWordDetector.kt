@@ -86,10 +86,7 @@ class WakeWordDetector(
                     phrase.contains(heyTarget) ||
                     phrase.contains(okTarget) ||
                     phrase == nameOnly
-                )) ||
-                phrase.contains("hello jarvis") ||
-                phrase.contains("hey jarvis") ||
-                phrase == "jarvis"
+                ))
             ) {
                 Log.i(TAG, "Wake word matched: '$phrase' -> Triggering action!")
                 mainHandler.post {

@@ -70,6 +70,12 @@ class MainActivity : AppCompatActivity() {
     private var viewStartX = 0f
     private var viewStartY = 0f
 
+    private val closeReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            finishAffinity()
+        }
+    }
+
     // Audio Permission Launcher
     private val requestAudioPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -134,16 +140,27 @@ class MainActivity : AppCompatActivity() {
         setupListeners()
         setupFloatingCameraDragging()
         observeViewModel()
+
+        val filter = android.content.IntentFilter("com.jarvis.assistant.ACTION_CLOSE_ASSISTANT")
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(closeReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(closeReceiver, filter)
+        }
     }
 
     override fun onResume() {
         super.onResume()
         viewModel.refreshSettings()
         applyTheme()
+        updateAssistantNameUi(JarvisApp.instance.preferences.assistantName)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        try {
+            unregisterReceiver(closeReceiver)
+        } catch (_: Exception) {}
         cameraExecutor?.shutdown()
         closeFloatingCamera()
     }
@@ -481,7 +498,8 @@ class MainActivity : AppCompatActivity() {
     private fun startScreenVisionMode() {
         binding.boxScreenVisionBanner.visibility = View.VISIBLE
         viewModel.setVisionMode(ConversationState.VISION_SCREEN)
-        Toast.makeText(this, "Screen Vision Active • Jarvis is observing", Toast.LENGTH_SHORT).show()
+        val name = JarvisApp.instance.preferences.assistantName
+        Toast.makeText(this, "Screen Vision Active • $name is observing", Toast.LENGTH_SHORT).show()
     }
 
     private fun stopScreenVisionMode() {
@@ -566,6 +584,13 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
+                // Dynamic Assistant Name
+                launch {
+                    viewModel.assistantName.collect { name ->
+                        updateAssistantNameUi(name)
+                    }
+                }
+
                 // Events / Alerts
                 launch {
                     viewModel.eventFlow.collect { message ->
@@ -574,6 +599,15 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun updateAssistantNameUi(name: String) {
+        val uppercaseName = name.uppercase()
+        binding.tvJarvisTitle.text = uppercaseName
+        binding.tvJarvisSubtitle.text = "ASSISTANT AI"
+        binding.tvDrawerTitle.text = "$uppercaseName CHAT"
+        binding.tvDrawerSubtitle.text = "CONVERSATION HISTORY"
+        binding.etDrawerMessage.hint = "Ask $name anything..."
     }
 
     private fun updatePowerButtonUi(isOn: Boolean) {
@@ -657,6 +691,7 @@ class MainActivity : AppCompatActivity() {
         orbHelper.updateState(state)
     }
 
+    @Deprecated("Deprecated in Java", ReplaceWith("onBackPressedDispatcher.onBackPressed()"))
     @Suppress("DEPRECATION")
     override fun onBackPressed() {
         if (binding.cardFloatingCamera.visibility == View.VISIBLE) {

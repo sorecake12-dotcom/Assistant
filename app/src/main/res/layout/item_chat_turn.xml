@@ -54,6 +54,18 @@
         android:paddingVertical="12dp">
 
         <TextView
+            android:id="@+id/tvAssistantSenderName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/primary_cyan"
+            android:textSize="11sp"
+            android:fontFamily="sans-serif-medium"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="3dp"
+            tools:text="Jarvis" />
+
+        <TextView
             android:id="@+id/tvJarvisResponse"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
