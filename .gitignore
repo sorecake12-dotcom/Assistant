@@ -12,6 +12,8 @@ app/build/
 .cxx/
 *.hprof
 *.log
+*.apk
+*.aab
 
 # Keystores and security
 *.jks
