@@ -646,16 +646,36 @@
                     tools:text="Arc Blue Theme (Electric Cyan &amp; Deep Space)" />
             </LinearLayout>
 
-            <!-- 5. APPLICATION UPDATES -->
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- 5. APPLICATION UPDATES & ABOUT -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="APPLICATION UPDATES"
-                android:textColor="@color/text_muted"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.08"
-                android:layout_marginTop="24dp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="24dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="APPLICATION UPDATES"
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08" />
+
+                <TextView
+                    android:id="@+id/tvCurrentVersionBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="v1.0.1 (116)"
+                    android:textColor="@color/neon_blue"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_card_rounded"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp" />
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/btnCheckUpdates"
@@ -670,6 +690,7 @@
                 android:focusable="true">
 
                 <ImageView
+                    android:id="@+id/ivUpdateSyncIcon"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_sync"
@@ -679,18 +700,225 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Check for System Updates"
+                    android:text="Check for Updates"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:layout_marginStart="14dp" />
 
                 <TextView
+                    android:id="@+id/tvUpdateStatusSummary"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Up to date >"
-                    android:textColor="@color/status_green"
-                    android:textSize="12sp" />
+                    android:text="Check now >"
+                    android:textColor="@color/neon_blue"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Dynamic Update Card (Shown when update checked) -->
+            <LinearLayout
+                android:id="@+id/cardUpdateDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card_rounded"
+                android:padding="16dp"
+                android:layout_marginTop="10dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:id="@+id/ivUpdateCardIcon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_sparkle"
+                        app:tint="@color/status_green" />
+
+                    <TextView
+                        android:id="@+id/tvUpdateCardTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="New Update Available"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginStart="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvUpdateTagBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="v1.0.2"
+                        android:textColor="@color/status_green"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvUpdateVersionComparison"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Current: 1.0.1  •  Latest: 1.0.2"
+                    android:textColor="@color/text_muted"
+                    android:textSize="11sp"
+                    android:layout_marginTop="4dp" />
+
+                <!-- Release Notes View -->
+                <TextView
+                    android:id="@+id/lblReleaseNotes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="WHAT'S NEW"
+                    android:textColor="@color/text_muted"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.06"
+                    android:layout_marginTop="12dp" />
+
+                <TextView
+                    android:id="@+id/tvReleaseNotes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxHeight="120dp"
+                    android:background="@drawable/bg_input_field"
+                    android:padding="10dp"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11.5sp"
+                    android:lineSpacingMultiplier="1.2"
+                    android:scrollbars="vertical"
+                    tools:text="• Real in-app APK update system&#10;• Camera &amp; Vision enhancements&#10;• Bug fixes" />
+
+                <!-- Download Progress Box -->
+                <LinearLayout
+                    android:id="@+id/boxDownloadProgress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvDownloadProgressText"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Downloading update... 0%"
+                            android:textColor="@color/neon_blue"
+                            android:textSize="11.5sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/btnCancelDownload"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Cancel"
+                            android:textColor="@color/status_red"
+                            android:textSize="11.5sp"
+                            android:textStyle="bold"
+                            android:clickable="true"
+                            android:focusable="true" />
+                    </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/pbDownloadProgress"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="6dp"
+                        android:layout_marginTop="6dp"
+                        android:max="100"
+                        android:progress="0"
+                        android:progressTint="@color/neon_blue" />
+                </LinearLayout>
+
+                <!-- Permission Warning (if unknown sources not allowed) -->
+                <TextView
+                    android:id="@+id/tvInstallPermissionNotice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Android requires permission to install updates downloaded from outside the Play Store."
+                    android:textColor="@color/gold_amber"
+                    android:textSize="11sp"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <!-- Action Buttons Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="end"
+                    android:layout_marginTop="14dp">
+
+                    <Button
+                        android:id="@+id/btnDismissUpdate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:background="@android:color/transparent"
+                        android:text="LATER"
+                        android:textColor="@color/text_muted"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:paddingHorizontal="14dp"
+                        app:backgroundTint="@null" />
+
+                    <Button
+                        android:id="@+id/btnAllowInstallPermission"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:background="@drawable/bg_chip_gold_active"
+                        android:text="ALLOW INSTALLS"
+                        android:textColor="#050507"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:paddingHorizontal="14dp"
+                        android:layout_marginStart="8dp"
+                        android:visibility="gone"
+                        app:backgroundTint="@null" />
+
+                    <Button
+                        android:id="@+id/btnDownloadUpdate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:background="@drawable/bg_btn_gradient"
+                        android:text="DOWNLOAD UPDATE"
+                        android:textColor="#050507"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:paddingHorizontal="14dp"
+                        android:layout_marginStart="8dp"
+                        app:backgroundTint="@null" />
+
+                    <Button
+                        android:id="@+id/btnInstallUpdate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:background="@drawable/bg_btn_gradient"
+                        android:text="INSTALL UPDATE"
+                        android:textColor="#050507"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:paddingHorizontal="14dp"
+                        android:layout_marginStart="8dp"
+                        android:visibility="gone"
+                        app:backgroundTint="@null" />
+                </LinearLayout>
+
             </LinearLayout>
 
             <!-- SAVE & APPLY BUTTON (Exact label 'SAVE & APPLY', full width, 58dp height, glowing primary action) -->

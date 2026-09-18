@@ -29,12 +29,17 @@ import com.jarvis.assistant.service.JarvisVoiceService
 import com.jarvis.assistant.ui.permissions.PermissionsActivity
 import com.jarvis.assistant.util.PermissionManager
 import com.jarvis.assistant.util.PermissionState
+import android.content.res.ColorStateList
 import androidx.lifecycle.lifecycleScope
+import com.jarvis.assistant.update.AppUpdateManager
+import com.jarvis.assistant.update.UpdateInfo
+import com.jarvis.assistant.update.UpdateStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 data class JarvisDraftConfig(
@@ -54,8 +59,19 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsBinding
     private val preferences by lazy { JarvisApp.instance.preferences }
 
+    private val httpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .build()
+    }
+
     private lateinit var savedConfig: JarvisDraftConfig
     private lateinit var draftConfig: JarvisDraftConfig
+
+    private var currentUpdateInfo: UpdateInfo? = null
+    private var downloadedApkFile: File? = null
+    private var isDownloading: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +86,7 @@ class SettingsActivity : AppCompatActivity() {
         setupPersonalitySegment()
         setupThemeOptions()
         setupSimSelector()
+        setupAppUpdateSection()
         applyConfigToUi(draftConfig)
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -82,6 +99,7 @@ class SettingsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         setupSimSelector()
+        checkPendingInstallPermission()
     }
 
     private fun loadInitialConfiguration() {
@@ -99,12 +117,6 @@ class SettingsActivity : AppCompatActivity() {
         draftConfig = savedConfig.copy()
     }
 
-    private val httpClient by lazy {
-        OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .build()
-    }
     private fun setupApiKeyActions() {
         binding.etApiKey.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -518,6 +530,8 @@ class SettingsActivity : AppCompatActivity() {
             isRed -> {
                 binding.viewThemeIndicator.setBackgroundResource(R.drawable.bg_segment_indicator_red)
                 binding.btnSaveApply.setBackgroundResource(R.drawable.bg_btn_gradient_red)
+                binding.btnDownloadUpdate.setBackgroundResource(R.drawable.bg_btn_gradient_red)
+                binding.btnInstallUpdate.setBackgroundResource(R.drawable.bg_btn_gradient_red)
 
                 binding.tvRedText.setTextColor(activeColor)
                 binding.ivRedIcon.setColorFilter(activeColor)
@@ -533,6 +547,8 @@ class SettingsActivity : AppCompatActivity() {
             isGold -> {
                 binding.viewThemeIndicator.setBackgroundResource(R.drawable.bg_segment_indicator_gold)
                 binding.btnSaveApply.setBackgroundResource(R.drawable.bg_btn_gradient_gold)
+                binding.btnDownloadUpdate.setBackgroundResource(R.drawable.bg_btn_gradient_gold)
+                binding.btnInstallUpdate.setBackgroundResource(R.drawable.bg_btn_gradient_gold)
 
                 binding.tvAmberGoldText.setTextColor(activeColor)
                 binding.ivAmberGoldIcon.setColorFilter(activeColor)
@@ -548,6 +564,8 @@ class SettingsActivity : AppCompatActivity() {
             else -> {
                 binding.viewThemeIndicator.setBackgroundResource(R.drawable.bg_segment_indicator)
                 binding.btnSaveApply.setBackgroundResource(R.drawable.bg_btn_gradient)
+                binding.btnDownloadUpdate.setBackgroundResource(R.drawable.bg_btn_gradient)
+                binding.btnInstallUpdate.setBackgroundResource(R.drawable.bg_btn_gradient)
 
                 binding.tvArcBlueText.setTextColor(activeColor)
                 binding.ivArcBlueIcon.setColorFilter(activeColor)
@@ -644,5 +662,205 @@ class SettingsActivity : AppCompatActivity() {
         val msg = if (apiKey.isNotEmpty()) "Configuration Saved & Applied. Gemini AI is active!" else "Configuration Saved & Applied"
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         finish()
+    }
+
+    // ==========================================
+    // IN-APP APK UPDATE SYSTEM
+    // ==========================================
+
+    private fun setupAppUpdateSection() {
+        val (versionName, versionCode) = AppUpdateManager.getInstalledVersion(this)
+        binding.tvCurrentVersionBadge.text = "v$versionName ($versionCode)"
+
+        binding.btnCheckUpdates.setOnClickListener {
+            if (!isDownloading) {
+                performUpdateCheck()
+            } else {
+                Toast.makeText(this, "Download in progress...", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.btnDismissUpdate.setOnClickListener {
+            binding.cardUpdateDetails.visibility = View.GONE
+        }
+
+        binding.btnCancelDownload.setOnClickListener {
+            cancelApkDownload()
+        }
+
+        binding.btnDownloadUpdate.setOnClickListener {
+            performApkDownload()
+        }
+
+        binding.btnInstallUpdate.setOnClickListener {
+            triggerApkInstall()
+        }
+
+        binding.btnAllowInstallPermission.setOnClickListener {
+            AppUpdateManager.openInstallPermissionSettings(this)
+        }
+    }
+
+    private fun performUpdateCheck() {
+        binding.btnCheckUpdates.isEnabled = false
+        binding.tvUpdateStatusSummary.text = "Checking..."
+        binding.ivUpdateSyncIcon.animate().rotationBy(360f).setDuration(800).start()
+
+        lifecycleScope.launch {
+            val status = AppUpdateManager.checkForUpdates(this@SettingsActivity)
+            binding.btnCheckUpdates.isEnabled = true
+
+            when (status) {
+                is UpdateStatus.UpdateAvailable -> {
+                    currentUpdateInfo = status.updateInfo
+                    binding.tvUpdateStatusSummary.text = "Update Available"
+                    binding.tvUpdateStatusSummary.setTextColor(ContextCompat.getColor(this@SettingsActivity, R.color.status_green))
+
+                    binding.tvUpdateCardTitle.text = "New Update Available"
+                    binding.tvUpdateTagBadge.text = "v${status.updateInfo.versionName}"
+                    binding.tvUpdateVersionComparison.text = "Current: ${status.installedVersionName}  •  Latest: ${status.updateInfo.versionName}"
+                    binding.tvReleaseNotes.text = status.updateInfo.releaseNotes
+
+                    binding.boxDownloadProgress.visibility = View.GONE
+                    binding.btnDownloadUpdate.visibility = View.VISIBLE
+                    binding.btnInstallUpdate.visibility = View.GONE
+
+                    checkPendingInstallPermission()
+
+                    binding.cardUpdateDetails.visibility = View.VISIBLE
+                    Toast.makeText(
+                        this@SettingsActivity,
+                        "Assistant v${status.updateInfo.versionName} is available!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                is UpdateStatus.UpToDate -> {
+                    binding.tvUpdateStatusSummary.text = "Up to date ✓"
+                    binding.tvUpdateStatusSummary.setTextColor(ContextCompat.getColor(this@SettingsActivity, R.color.soft_blue))
+                    binding.cardUpdateDetails.visibility = View.GONE
+                    Toast.makeText(
+                        this@SettingsActivity,
+                        "Assistant is up to date (v${status.installedVersionName})",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                is UpdateStatus.Error -> {
+                    binding.tvUpdateStatusSummary.text = "Check failed"
+                    binding.tvUpdateStatusSummary.setTextColor(ContextCompat.getColor(this@SettingsActivity, R.color.status_red))
+                    Toast.makeText(
+                        this@SettingsActivity,
+                        status.message,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                else -> {}
+            }
+        }
+    }
+
+    private fun performApkDownload() {
+        val info = currentUpdateInfo ?: return
+        isDownloading = true
+
+        binding.boxDownloadProgress.visibility = View.VISIBLE
+        binding.btnDownloadUpdate.visibility = View.GONE
+        binding.btnInstallUpdate.visibility = View.GONE
+        binding.pbDownloadProgress.progress = 0
+        binding.tvDownloadProgressText.text = "Connecting to download server..."
+
+        lifecycleScope.launch {
+            val result = AppUpdateManager.downloadApk(this@SettingsActivity, info) { percent, downloadedBytes, totalBytes ->
+                binding.pbDownloadProgress.progress = percent
+                val formattedDownloaded = formatFileSize(downloadedBytes)
+                val formattedTotal = if (totalBytes > 0) formatFileSize(totalBytes) else "..."
+                binding.tvDownloadProgressText.text = "Downloading update... $percent% ($formattedDownloaded / $formattedTotal)"
+            }
+
+            isDownloading = false
+            binding.boxDownloadProgress.visibility = View.GONE
+
+            if (result.isSuccess) {
+                downloadedApkFile = result.getOrNull()
+                binding.btnInstallUpdate.visibility = View.VISIBLE
+                binding.btnDownloadUpdate.visibility = View.GONE
+                checkPendingInstallPermission()
+                Toast.makeText(
+                    this@SettingsActivity,
+                    "Download complete. Package verified!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                if (AppUpdateManager.canRequestPackageInstalls(this@SettingsActivity)) {
+                    triggerApkInstall()
+                }
+            } else {
+                binding.btnDownloadUpdate.visibility = View.VISIBLE
+                binding.btnInstallUpdate.visibility = View.GONE
+                val errorMsg = result.exceptionOrNull()?.localizedMessage ?: "Unknown download error"
+                Toast.makeText(
+                    this@SettingsActivity,
+                    "Download failed: $errorMsg",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    private fun cancelApkDownload() {
+        if (isDownloading) {
+            AppUpdateManager.cancelDownload()
+            isDownloading = false
+            binding.boxDownloadProgress.visibility = View.GONE
+            binding.btnDownloadUpdate.visibility = View.VISIBLE
+            Toast.makeText(this, "Download cancelled", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun triggerApkInstall() {
+        val apk = downloadedApkFile
+        if (apk == null || !apk.exists()) {
+            Toast.makeText(this, "Update package not found. Please download again.", Toast.LENGTH_SHORT).show()
+            binding.btnInstallUpdate.visibility = View.GONE
+            binding.btnDownloadUpdate.visibility = View.VISIBLE
+            return
+        }
+
+        if (!AppUpdateManager.canRequestPackageInstalls(this)) {
+            binding.tvInstallPermissionNotice.visibility = View.VISIBLE
+            binding.btnAllowInstallPermission.visibility = View.VISIBLE
+            AlertDialog.Builder(this)
+                .setTitle("Install Permission Required")
+                .setMessage("Android requires permission to install APK updates downloaded from outside the Google Play Store.\n\nPlease tap 'ALLOW' to grant permission in Settings, then return to install.")
+                .setPositiveButton("SETTINGS") { _, _ ->
+                    AppUpdateManager.openInstallPermissionSettings(this)
+                }
+                .setNegativeButton("CANCEL", null)
+                .show()
+            return
+        }
+
+        val launched = AppUpdateManager.launchPackageInstaller(this, apk)
+        if (!launched) {
+            Toast.makeText(this, "Failed to launch package installer. Check file permissions.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun checkPendingInstallPermission() {
+        val hasPermission = AppUpdateManager.canRequestPackageInstalls(this)
+        if (hasPermission) {
+            binding.tvInstallPermissionNotice.visibility = View.GONE
+            binding.btnAllowInstallPermission.visibility = View.GONE
+        } else if (currentUpdateInfo != null || downloadedApkFile != null) {
+            binding.tvInstallPermissionNotice.visibility = View.VISIBLE
+            binding.btnAllowInstallPermission.visibility = View.VISIBLE
+        }
+    }
+
+    private fun formatFileSize(bytes: Long): String {
+        return when {
+            bytes >= 1024 * 1024 -> String.format("%.1f MB", bytes.toDouble() / (1024 * 1024))
+            bytes >= 1024 -> String.format("%.1f KB", bytes.toDouble() / 1024)
+            else -> "$bytes B"
+        }
     }
 }

@@ -933,6 +933,67 @@
             </p>
           </div>
 
+          <!-- APPLICATION UPDATES & ABOUT -->
+          <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+            <span>APPLICATION UPDATES</span>
+            <span id="previewVersionBadge" style="background:#07090F; border:1px solid var(--border-subtle); color:var(--accent); font-size:11px; font-weight:700; padding:2px 8px; border-radius:8px;">v1.0.1 (116)</span>
+          </div>
+          <div class="config-card" style="padding:14px;">
+            <div id="btnPreviewCheckUpdates" style="display:flex; align-items:center; justify-content:space-between; cursor:pointer; padding:6px 0;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <svg id="previewSyncIcon" viewBox="0 0 24 24" style="width:20px; height:20px; fill:var(--accent);"><path d="M12,4V1L8,5l4,4V6c3.31,0 6,2.69 6,6 0,1.01,-0.25,1.97,-0.7,2.8l1.46,1.46C19.54,15.03 20,13.57 20,12c0,-4.42,-3.58,-8,-8,-8zm0,14c-3.31,0 -6,-2.69 -6,-6 0,-1.01 0.25,-1.97 0.7,-2.8L5.24,7.74C4.46,8.97 4,10.43 4,12c0,4.42 3.58,8 8,8v3l4,-4 -4,-4v3z"/></svg>
+                <div style="display:flex; flex-direction:column;">
+                  <span style="font-size:13.5px; font-weight:700; color:#F4F4F6;">Check for Updates</span>
+                  <span style="font-size:11px; color:#565F76;">GitHub Releases: sorecake12-dotcom/Assistant</span>
+                </div>
+              </div>
+              <span id="previewUpdateSummary" style="font-size:12px; font-weight:700; color:var(--accent);">Check now &gt;</span>
+            </div>
+
+            <!-- Expandable Update Card -->
+            <div id="previewCardUpdateDetails" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--border-subtle);">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="width:8px; height:8px; border-radius:50%; background:#30D158;"></span>
+                  <span style="font-size:13px; font-weight:700; color:#F4F4F6;">New Update Available</span>
+                </div>
+                <span id="previewUpdateTagBadge" style="background:rgba(48,209,88,0.15); border:1px solid rgba(48,209,88,0.3); color:#30D158; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px;">v1.0.2</span>
+              </div>
+              <p style="font-size:11px; color:#9BA3B8; margin-top:4px;">Current: 1.0.1 (116)  •  Latest: 1.0.2 (117)</p>
+              
+              <div style="background:#07090F; border:1px solid var(--border-subtle); border-radius:8px; padding:10px; margin-top:10px; font-size:11px; color:#9BA3B8; line-height:1.4; max-height:80px; overflow-y:auto;">
+                <strong style="color:var(--accent); display:block; margin-bottom:4px;">WHAT'S NEW:</strong>
+                • Real in-app APK update system with streaming download<br>
+                • Package integrity verification via Android PackageManager<br>
+                • Sideload install permission handling &amp; UI
+              </div>
+
+              <!-- Download Progress -->
+              <div id="previewDownloadBox" style="display:none; margin-top:10px;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:var(--accent);">
+                  <span id="previewDownloadProgressText">Downloading update... 0%</span>
+                  <span id="previewBtnCancelDownload" style="color:#FF453A; cursor:pointer;">Cancel</span>
+                </div>
+                <div style="width:100%; height:6px; background:#07090F; border-radius:3px; margin-top:6px; overflow:hidden;">
+                  <div id="previewProgressBar" style="width:0%; height:100%; background:var(--accent); transition:width 0.2s;"></div>
+                </div>
+              </div>
+
+              <!-- Permission Warning -->
+              <div id="previewPermWarning" style="display:none; margin-top:10px; font-size:11px; color:#FFD60A; background:rgba(255,214,10,0.1); border:1px solid rgba(255,214,10,0.25); border-radius:6px; padding:8px;">
+                Android requires permission to install apps downloaded outside Google Play.
+              </div>
+
+              <!-- Buttons -->
+              <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+                <button id="previewBtnDismissUpdate" style="background:transparent; border:none; color:#565F76; font-size:11px; font-weight:700; cursor:pointer; padding:6px 12px;">LATER</button>
+                <button id="previewBtnAllowPerm" style="display:none; background:#FFD60A; border:none; border-radius:8px; color:#050507; font-size:11px; font-weight:700; padding:6px 12px; cursor:pointer;">ALLOW INSTALLS</button>
+                <button id="previewBtnDownloadUpdate" class="save-config-btn" style="width:auto; margin:0; height:34px; font-size:11px; padding:0 14px;">DOWNLOAD UPDATE</button>
+                <button id="previewBtnInstallUpdate" class="save-config-btn" style="display:none; width:auto; margin:0; height:34px; font-size:11px; padding:0 14px;">INSTALL UPDATE</button>
+              </div>
+            </div>
+          </div>
+
           <!-- EXACT "SAVE & APPLY" BUTTON (Prominent, large touch target, press animation) -->
           <button class="save-config-btn" id="btnSaveConfig">SAVE &amp; APPLY</button>
 
@@ -2110,6 +2171,115 @@
         document.getElementById('settingsPage').classList.remove('active');
       }
     });
+
+    // IN-APP UPDATE SIMULATION LOGIC
+    let isUpdateDownloading = false;
+    let downloadProgressVal = 0;
+    let downloadInterval = null;
+    let hasInstallPermission = false;
+
+    const btnPreviewCheckUpdates = document.getElementById('btnPreviewCheckUpdates');
+    const previewSyncIcon = document.getElementById('previewSyncIcon');
+    const previewUpdateSummary = document.getElementById('previewUpdateSummary');
+    const previewCardUpdateDetails = document.getElementById('previewCardUpdateDetails');
+    const previewDownloadBox = document.getElementById('previewDownloadBox');
+    const previewProgressBar = document.getElementById('previewProgressBar');
+    const previewDownloadProgressText = document.getElementById('previewDownloadProgressText');
+    const previewBtnCancelDownload = document.getElementById('previewBtnCancelDownload');
+    const previewBtnDownloadUpdate = document.getElementById('previewBtnDownloadUpdate');
+    const previewBtnInstallUpdate = document.getElementById('previewBtnInstallUpdate');
+    const previewBtnAllowPerm = document.getElementById('previewBtnAllowPerm');
+    const previewPermWarning = document.getElementById('previewPermWarning');
+    const previewBtnDismissUpdate = document.getElementById('previewBtnDismissUpdate');
+
+    if (btnPreviewCheckUpdates) {
+      btnPreviewCheckUpdates.addEventListener('click', () => {
+        previewUpdateSummary.textContent = 'Checking...';
+        previewSyncIcon.style.transition = 'transform 0.8s ease';
+        previewSyncIcon.style.transform = 'rotate(360deg)';
+
+        setTimeout(() => {
+          previewSyncIcon.style.transform = 'rotate(0deg)';
+          previewUpdateSummary.textContent = 'Update Available';
+          previewUpdateSummary.style.color = '#30D158';
+          previewCardUpdateDetails.style.display = 'block';
+
+          if (!hasInstallPermission) {
+            previewPermWarning.style.display = 'block';
+            previewBtnAllowPerm.style.display = 'inline-block';
+          } else {
+            previewPermWarning.style.display = 'none';
+            previewBtnAllowPerm.style.display = 'none';
+          }
+        }, 700);
+      });
+    }
+
+    if (previewBtnDismissUpdate) {
+      previewBtnDismissUpdate.addEventListener('click', () => {
+        previewCardUpdateDetails.style.display = 'none';
+      });
+    }
+
+    if (previewBtnAllowPerm) {
+      previewBtnAllowPerm.addEventListener('click', () => {
+        hasInstallPermission = true;
+        previewPermWarning.style.display = 'none';
+        previewBtnAllowPerm.style.display = 'none';
+        alert('Permission Granted: "Install unknown apps" enabled for Assistant.');
+      });
+    }
+
+    if (previewBtnDownloadUpdate) {
+      previewBtnDownloadUpdate.addEventListener('click', () => {
+        isUpdateDownloading = true;
+        previewDownloadBox.style.display = 'block';
+        previewBtnDownloadUpdate.style.display = 'none';
+        previewBtnInstallUpdate.style.display = 'none';
+        downloadProgressVal = 0;
+        previewProgressBar.style.width = '0%';
+        previewDownloadProgressText.textContent = 'Downloading update... 0% (0.0 MB / 6.5 MB)';
+
+        downloadInterval = setInterval(() => {
+          downloadProgressVal += 10;
+          if (downloadProgressVal > 100) downloadProgressVal = 100;
+          previewProgressBar.style.width = downloadProgressVal + '%';
+          const mb = ((downloadProgressVal / 100) * 6.5).toFixed(1);
+          previewDownloadProgressText.textContent = `Downloading update... ${downloadProgressVal}% (${mb} MB / 6.5 MB)`;
+
+          if (downloadProgressVal >= 100) {
+            clearInterval(downloadInterval);
+            isUpdateDownloading = false;
+            previewDownloadBox.style.display = 'none';
+            previewBtnInstallUpdate.style.display = 'inline-block';
+            alert('Download Complete: Assistant-1.0.2-release.apk verified and ready to install.');
+          }
+        }, 150);
+      });
+    }
+
+    if (previewBtnCancelDownload) {
+      previewBtnCancelDownload.addEventListener('click', () => {
+        if (isUpdateDownloading) {
+          clearInterval(downloadInterval);
+          isUpdateDownloading = false;
+          previewDownloadBox.style.display = 'none';
+          previewBtnDownloadUpdate.style.display = 'inline-block';
+          previewDownloadProgressText.textContent = 'Downloading update... 0%';
+          previewProgressBar.style.width = '0%';
+        }
+      });
+    }
+
+    if (previewBtnInstallUpdate) {
+      previewBtnInstallUpdate.addEventListener('click', () => {
+        if (!hasInstallPermission) {
+          alert('Install Blocked: Please tap "ALLOW INSTALLS" first to grant Android sideload permission.');
+          return;
+        }
+        alert('Launching Official Android Package Installer (ACTION_VIEW with FileProvider)... Assistant will now update.');
+      });
+    }
 
     // ONBOARDING SIMULATION LOGIC
     let currentObStep = 1;
